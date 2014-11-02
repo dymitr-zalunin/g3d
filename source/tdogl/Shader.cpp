@@ -19,6 +19,7 @@
 #include "Shader.h"
 #include <stdexcept>
 #include <fstream>
+#include <string>
 #include <cassert>
 #include <sstream>
 

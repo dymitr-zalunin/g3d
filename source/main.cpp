@@ -1,6 +1,5 @@
 /*
- main.cpp
- article-01-skeleton
+ main
 
  Copyright 2012 Thomas Dalling - http://tomdalling.com/
  Copyright 2014 Dymitr Załunin
@@ -18,42 +17,53 @@
  limitations under the License.
  */
 
+#include "Helper.h"
+
 // third-party libraries
 #include <GL/glew.h>
 #include <GL/glfw.h>
 #include <glm/glm.hpp>
-
+#include <glm/gtc/matrix_transform.hpp>
 // standard C++ libraries
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
 
 // tdogl classes
-#include "Program.h"
-#include "Helper.h"
+#include "tdogl/Program.h"
+#include "tdogl/Texture.h"
+#include "tdogl/Camera.h"
 
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
 
 // globals
+tdogl::Texture* gTexture = NULL;
 tdogl::Program* gProgram = NULL;
+tdogl::Camera gCamera;
 GLuint gVAO = 0;
 GLuint gVBO = 0;
+GLfloat gDegreesRotated = 0.0f;
+double gScrollY = 0.0;
 
-// returns the full path to the file `fileName` in the same folder as the executable
+
+// returns the full path to the file `fileName` in the resources directory of the app bundle
 static std::string ResourcePath(std::string fileName) {
-	return GetProcessPath() + "/" + fileName;
+    return GetProcessPath() + "/resources/" + fileName;
 }
+
 
 // loads the vertex shader and fragment shader, and links them to make the global gProgram
 static void LoadShaders() {
     std::vector<tdogl::Shader> shaders;
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("resources/vertex-shader.txt"), GL_VERTEX_SHADER));
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("resources/fragment-shader.txt"), GL_FRAGMENT_SHADER));
+    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
+    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
     gProgram = new tdogl::Program(shaders);
 }
 
 
-// loads a triangle into the VAO and VBO globals: gVAO and gVBO
+// loads a triangle into the VAO global
 static void LoadTriangle() {
     // make and bind the VAO
     glGenVertexArrays(1, &gVAO);
@@ -63,22 +73,78 @@ static void LoadTriangle() {
     glGenBuffers(1, &gVBO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
     
-    // Put the three triangle verticies into the VBO
+    // Put the three triangle vertices (XYZ) and texture coordinates (UV) into the VBO
     GLfloat vertexData[] = {
-        //  X     Y     Z
-         0.0f, 0.8f, 0.0f,
-        -0.8f,-0.8f, 0.0f,
-         0.8f,-0.8f, 0.0f,
+//  X     Y     Z       U     V
+            // bottom
+            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+
+            // top
+            -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+
+            // front
+            -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+            1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+
+            // back
+            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+            1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+
+            // left
+            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+
+            // right
+            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+            1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-    
+
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(gProgram->attrib("vert"));
-    glVertexAttribPointer(gProgram->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    
-    // unbind the VBO and VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribPointer(gProgram->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+        
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gProgram->attrib("vertTexCoord"));
+    glVertexAttribPointer(gProgram->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+    // unbind the VAO
     glBindVertexArray(0);
+}
+
+
+// loads the file "hazard.png" into gTexture
+static void LoadTexture() {
+    tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath("wooden-crate.jpg"));
+    bmp.flipVertically();
+    gTexture = new tdogl::Texture(bmp);
 }
 
 
@@ -89,24 +155,75 @@ static void Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // bind the program (the shaders)
-    glUseProgram(gProgram->object());
-        
+    gProgram->use();
+
+    //set the "camera" uniform
+    gProgram->setUniform("camera", gCamera.matrix());
+
+//    gProgram->setUniform("model", glm::rotate(glm::mat4(), gDegreesRotated, glm::vec3(0,1,0)));
+
+    // bind the texture and set the "tex" uniform in the fragment shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gTexture->object());
+    gProgram->setUniform("tex", 0); //set to 0 because the texture is bound to GL_TEXTURE0
+
     // bind the VAO (the triangle)
     glBindVertexArray(gVAO);
     
     // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6*2*3);
     
-    // unbind the VAO
+    // unbind the VAO, the program and the texture
     glBindVertexArray(0);
-    
-    // unbind the program
-    glUseProgram(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    gProgram->stopUsing();
     
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers();
 }
 
+void Update(float secondsElapsed) {
+//    const GLfloat degreesPerSecond = 30.0f;
+//    gDegreesRotated += secondsElapsed * degreesPerSecond;
+//    while (gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
+
+    //move position of camera based on WASD keys, and XZ keys for up and down
+    const float moveSpeed = 2.0; //units per second
+    const float horizontalAngleSpeed = 90.0f;
+    const float verticalAngleSpeed = 40.0f;
+    if(glfwGetKey('S')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
+    } else if(glfwGetKey('W')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.forward());
+    }
+    if(glfwGetKey('A')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.right());
+    } else if(glfwGetKey('D')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
+    }
+    if(glfwGetKey('Z')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
+    } else if(glfwGetKey('X')){
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
+    } else if (glfwGetKey('E')) {
+        gCamera.offsetOrientation(0.0f, secondsElapsed * horizontalAngleSpeed);
+    } else if (glfwGetKey('Q')) {
+        gCamera.offsetOrientation(0.0f, -secondsElapsed * horizontalAngleSpeed);
+    } else if (glfwGetKey('R')) {
+        gCamera.offsetOrientation(secondsElapsed * verticalAngleSpeed, 0.0f);
+    } else if (glfwGetKey('T')) {
+        gCamera.offsetOrientation(-secondsElapsed * verticalAngleSpeed, 0.0f);
+
+    }
+
+    //increase or decrease field of view based on mouse wheel
+    const float zoomSensitivity = -2.0;
+    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float)glfwGetMouseWheel();
+    if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+    if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+    gCamera.setFieldOfView(fieldOfView);
+    glfwSetMouseWheel(0);
+}
 
 // the program starts here
 int main(int argc, char *argv[]) {
@@ -126,23 +243,46 @@ int main(int argc, char *argv[]) {
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
     if(glewInit() != GLEW_OK)
         throw std::runtime_error("glewInit failed");
-    
+
+    // print out some info about the graphics drivers
+    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+
     // make sure OpenGL version 3.2 API is available
     if(!GLEW_VERSION_3_2)
         throw std::runtime_error("OpenGL 3.2 API is not available.");
 
+    // OpenGL settings
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // load vertex and fragment shaders into opengl
     LoadShaders();
-    
+
+    // load the texture
+    LoadTexture();
+
     // create buffer and fill it with the points of the triangle
     LoadTriangle();
-    
+
+    gCamera.setPosition(glm::vec3(0,0,4));
+    gCamera.setViewportAspectRatio(SCREEN_SIZE.x/SCREEN_SIZE.y);
+
     // run while the window is open
+    double lastTime= glfwGetTime();
     while(glfwGetWindowParam(GLFW_OPENED)){
+        glfwPollEvents();
+        double thisTime= glfwGetTime();
+        Update((float)(thisTime-lastTime));
+        lastTime=thisTime;
         // draw one frame
         Render();
     }
-    
+
     // clean up and exit
     glfwTerminate();
     return EXIT_SUCCESS;
