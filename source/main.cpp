@@ -183,9 +183,6 @@ static void Render() {
 }
 
 void Update(float secondsElapsed) {
-//    const GLfloat degreesPerSecond = 30.0f;
-//    gDegreesRotated += secondsElapsed * degreesPerSecond;
-//    while (gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
 
     //move position of camera based on WASD keys, and XZ keys for up and down
     const float moveSpeed = 2.0; //units per second
@@ -205,13 +202,13 @@ void Update(float secondsElapsed) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
     } else if(glfwGetKey('X')){
         gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
-    } else if (glfwGetKey('E')) {
+    } else if (glfwGetKey(GLFW_KEY_RIGHT)) {
         gCamera.offsetOrientation(0.0f, secondsElapsed * horizontalAngleSpeed);
-    } else if (glfwGetKey('Q')) {
+    } else if (glfwGetKey(GLFW_KEY_LEFT)) {
         gCamera.offsetOrientation(0.0f, -secondsElapsed * horizontalAngleSpeed);
-    } else if (glfwGetKey('R')) {
+    } else if (glfwGetKey(GLFW_KEY_UP)) {
         gCamera.offsetOrientation(secondsElapsed * verticalAngleSpeed, 0.0f);
-    } else if (glfwGetKey('T')) {
+    } else if (glfwGetKey(GLFW_KEY_DOWN)) {
         gCamera.offsetOrientation(-secondsElapsed * verticalAngleSpeed, 0.0f);
 
     }
