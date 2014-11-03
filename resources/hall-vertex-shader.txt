@@ -12,5 +12,5 @@ void main() {
     // Pass the tex coord straight through to the fragment shader
     fragTexCoord = vertTexCoord;
     
-    gl_Position = camera*vec4(vert, 1); //order multiplication : right to left
+    gl_Position = camera*model*vec4(vert, 1); //order multiplication : right to left
 }

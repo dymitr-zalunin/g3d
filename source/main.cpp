@@ -29,23 +29,20 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
-
+#include <list>
 // tdogl classes
 #include "tdogl/Program.h"
 #include "tdogl/Texture.h"
 #include "tdogl/Camera.h"
-
+#include "tdogl/Model.h"
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
 
 // globals
-tdogl::Texture* gTexture = NULL;
-tdogl::Program* gProgram = NULL;
+tdogl::ModelAsset gHall;
+std::list<tdogl::ModelInstance> gInstances;
 tdogl::Camera gCamera;
-GLuint gVAO = 0;
-GLuint gVBO = 0;
 GLfloat gDegreesRotated = 0.0f;
-double gScrollY = 0.0;
 
 
 // returns the full path to the file `fileName` in the resources directory of the app bundle
@@ -55,169 +52,190 @@ static std::string ResourcePath(std::string fileName) {
 
 
 // loads the vertex shader and fragment shader, and links them to make the global gProgram
-static void LoadShaders() {
+static tdogl::Program *LoadShaders(const char *vertexFilename, const char *fragmentFilename) {
     std::vector<tdogl::Shader> shaders;
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
-    gProgram = new tdogl::Program(shaders);
+    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(vertexFilename), GL_VERTEX_SHADER));
+    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(fragmentFilename), GL_FRAGMENT_SHADER));
+    return new tdogl::Program(shaders);
 }
 
 
-// loads a triangle into the VAO global
-static void LoadTriangle() {
-    // make and bind the VAO
-    glGenVertexArrays(1, &gVAO);
-    glBindVertexArray(gVAO);
-    
-    // make and bind the VBO
-    glGenBuffers(1, &gVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    
-    // Put the three triangle vertices (XYZ) and texture coordinates (UV) into the VBO
+// loads the content from file `filename` into gTexture
+static tdogl::Texture *LoadTexture(const char *filename) {
+    tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath(filename));
+    bmp.flipVertically();
+    return new tdogl::Texture(bmp);
+}
+
+static void LoadHallAsset() {
+    gHall.shaders = LoadShaders("hall-vertex-shader.txt", "hall-fragment-shader.txt");
+    gHall.drawType = GL_TRIANGLES;
+    gHall.drawStart = 0;
+    gHall.drawCount = 6 * 3 * 2;
+    glGenBuffers(1, &gHall.vbo);
+    glGenVertexArrays(1, &gHall.vao);
+
+    glBindVertexArray(gHall.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, gHall.vbo);
+
     GLfloat vertexData[] = {
-//  X     Y     Z       U     V
+            //  X     Y     Z
             // bottom
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
 
             // top
-            -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
 
             // front
-            -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
 
             // back
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
 
             // left
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
 
             // right
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+            1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
 
     };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData),vertexData, GL_STATIC_DRAW);
 
     // connect the xyz to the "vert" attribute of the vertex shader
-    glEnableVertexAttribArray(gProgram->attrib("vert"));
-    glVertexAttribPointer(gProgram->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
-        
-    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
-    glEnableVertexAttribArray(gProgram->attrib("vertTexCoord"));
-    glVertexAttribPointer(gProgram->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(gHall.shaders->attrib("vert"));
+    glVertexAttribPointer(gHall.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), NULL);
 
     // unbind the VAO
     glBindVertexArray(0);
 }
 
-
-// loads the file "hazard.png" into gTexture
-static void LoadTexture() {
-    tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath("wooden-crate.jpg"));
-    bmp.flipVertically();
-    gTexture = new tdogl::Texture(bmp);
+// convenience function that returns a translation matrix
+glm::mat4 translate(GLfloat x, GLfloat y, GLfloat z) {
+    return glm::translate(glm::mat4(), glm::vec3(x,y,z));
 }
 
 
-// draws a single frame
-static void Render() {
-    // clear everything
-    glClearColor(0, 0, 0, 1); // black
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // bind the program (the shaders)
-    gProgram->use();
+// convenience function that returns a scaling matrix
+glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
+    return glm::scale(glm::mat4(), glm::vec3(x,y,z));
+}
 
-    //set the "camera" uniform
-    gProgram->setUniform("camera", gCamera.matrix());
+static void CreateInstances() {
+    tdogl::ModelInstance hall;
+    hall.asset=&gHall;
+    hall.transform=scale(8,6,10);
+    gInstances.push_back(hall);
+}
 
-//    gProgram->setUniform("model", glm::rotate(glm::mat4(), gDegreesRotated, glm::vec3(0,1,0)));
+static void RenderInstance(const tdogl::ModelInstance& inst) {
+    tdogl::ModelAsset* asset = inst.asset;
+    tdogl::Program* shaders = asset->shaders;
 
-    // bind the texture and set the "tex" uniform in the fragment shader
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gTexture->object());
-    gProgram->setUniform("tex", 0); //set to 0 because the texture is bound to GL_TEXTURE0
+    //bind the shaders
+    shaders->use();
 
-    // bind the VAO (the triangle)
-    glBindVertexArray(gVAO);
-    
-    // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 6*2*3);
-    
-    // unbind the VAO, the program and the texture
+    //set the shader uniforms
+    shaders->setUniform("camera", gCamera.matrix());
+    shaders->setUniform("model", inst.transform);
+
+    if (asset->texture!= NULL) {
+        //bind the texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, asset->texture->object());
+        shaders->setUniform("tex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
+    }
+
+    //bind VAO and draw
+    glBindVertexArray(asset->vao);
+    glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
+
+    //unbind everything
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
-    gProgram->stopUsing();
-    
-    // swap the display buffers (displays what was just drawn)
+    shaders->stopUsing();
+}
+
+// draws a single frame
+static void Render() {
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::list<tdogl::ModelInstance>::const_iterator it;
+    for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
+        RenderInstance(*it);
+    }
+
     glfwSwapBuffers();
 }
 
 void Update(float secondsElapsed) {
 
     //move position of camera based on WASD keys, and XZ keys for up and down
-    const float moveSpeed = 2.0; //units per second
+    const float moveSpeed = 5.0; //units per second
     const float horizontalAngleSpeed = 90.0f;
     const float verticalAngleSpeed = 40.0f;
-    if(glfwGetKey('S')){
+    if (glfwGetKey('S')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
-    } else if(glfwGetKey('W')){
+    } else if (glfwGetKey('W')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.forward());
     }
-    if(glfwGetKey('A')){
+    if (glfwGetKey('A')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.right());
-    } else if(glfwGetKey('D')){
+    } else if (glfwGetKey('D')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
     }
-    if(glfwGetKey('Z')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
-    } else if(glfwGetKey('X')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
+    if (glfwGetKey('Z')) {
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0, 1, 0));
+    } else if (glfwGetKey('X')) {
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0, 1, 0));
     } else if (glfwGetKey(GLFW_KEY_RIGHT)) {
         gCamera.offsetOrientation(0.0f, secondsElapsed * horizontalAngleSpeed);
     } else if (glfwGetKey(GLFW_KEY_LEFT)) {
         gCamera.offsetOrientation(0.0f, -secondsElapsed * horizontalAngleSpeed);
-    } else if (glfwGetKey(GLFW_KEY_UP)) {
-        gCamera.offsetOrientation(secondsElapsed * verticalAngleSpeed, 0.0f);
     } else if (glfwGetKey(GLFW_KEY_DOWN)) {
+        gCamera.offsetOrientation(secondsElapsed * verticalAngleSpeed, 0.0f);
+    } else if (glfwGetKey(GLFW_KEY_UP)) {
         gCamera.offsetOrientation(-secondsElapsed * verticalAngleSpeed, 0.0f);
 
     }
 
     //increase or decrease field of view based on mouse wheel
     const float zoomSensitivity = -2.0;
-    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float)glfwGetMouseWheel();
-    if(fieldOfView < 5.0f) fieldOfView = 5.0f;
-    if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float) glfwGetMouseWheel();
+    if (fieldOfView < 5.0f) fieldOfView = 5.0f;
+    if (fieldOfView > 130.0f) fieldOfView = 130.0f;
     gCamera.setFieldOfView(fieldOfView);
     glfwSetMouseWheel(0);
 }
@@ -225,20 +243,20 @@ void Update(float secondsElapsed) {
 // the program starts here
 int main(int argc, char *argv[]) {
     // initialise GLFW
-    if(!glfwInit())
+    if (!glfwInit())
         throw std::runtime_error("glfwInit failed");
-    
+
     // open a window with GLFW
     glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 2);
     glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-    if(!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
+    if (!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
         throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
-    
+
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
-    if(glewInit() != GLEW_OK)
+    if (glewInit() != GLEW_OK)
         throw std::runtime_error("glewInit failed");
 
     // print out some info about the graphics drivers
@@ -248,7 +266,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 
     // make sure OpenGL version 3.2 API is available
-    if(!GLEW_VERSION_3_2)
+    if (!GLEW_VERSION_3_2)
         throw std::runtime_error("OpenGL 3.2 API is not available.");
 
     // OpenGL settings
@@ -257,27 +275,28 @@ int main(int argc, char *argv[]) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // load vertex and fragment shaders into opengl
-    LoadShaders();
-
-    // load the texture
-    LoadTexture();
-
     // create buffer and fill it with the points of the triangle
-    LoadTriangle();
+    LoadHallAsset();
+    CreateInstances();
 
-    gCamera.setPosition(glm::vec3(0,0,4));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x/SCREEN_SIZE.y);
+    gCamera.setPosition(glm::vec3(-10, 10, 24));
+    gCamera.offsetOrientation(25.0f, 23.0f);
+    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 
     // run while the window is open
-    double lastTime= glfwGetTime();
-    while(glfwGetWindowParam(GLFW_OPENED)){
-        glfwPollEvents();
-        double thisTime= glfwGetTime();
-        Update((float)(thisTime-lastTime));
-        lastTime=thisTime;
+    double lastTime = glfwGetTime();
+    while (glfwGetWindowParam(GLFW_OPENED)) {
+        // update the scene based on the time elapsed since last update
+        double thisTime = glfwGetTime();
+        Update(thisTime - lastTime);
+        lastTime = thisTime;
+
         // draw one frame
         Render();
+
+        //exit program if escape key is pressed
+        if(glfwGetKey(GLFW_KEY_ESC))
+            glfwCloseWindow();
     }
 
     // clean up and exit

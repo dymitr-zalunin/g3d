@@ -22,9 +22,8 @@ set(SOURCE_FILES
     source/tdogl/Camera.cpp
     source/tdogl/Camera.h)
 
-configure_file(resources/fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/fragment-shader.txt COPYONLY)
-configure_file(resources/vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/vertex-shader.txt COPYONLY)
-configure_file(resources/wooden-crate.jpg ${EXECUTABLE_OUTPUT_PATH}/resources/wooden-crate.jpg COPYONLY)
+configure_file(resources/hall-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-fragment-shader.txt COPYONLY)
+configure_file(resources/hall-vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-vertex-shader.txt COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW)
