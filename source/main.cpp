@@ -39,105 +39,14 @@
 const glm::vec2 SCREEN_SIZE(800, 600);
 
 // globals
-tdogl::ModelAsset gHall;
-std::list<tdogl::ModelInstance> gInstances;
+tdogl::HallAsset gHall;
+tdogl::ColumnAsset gColumn;
+std::list<tdogl::ModelInstance*> gInstances;
 tdogl::Camera gCamera;
-GLfloat gDegreesRotated = 0.0f;
 
-
-// returns the full path to the file `fileName` in the resources directory of the app bundle
-static std::string ResourcePath(std::string fileName) {
-    return GetProcessPath() + "/resources/" + fileName;
-}
-
-
-// loads the vertex shader and fragment shader, and links them to make the global gProgram
-static tdogl::Program *LoadShaders(const char *vertexFilename, const char *fragmentFilename) {
-    std::vector<tdogl::Shader> shaders;
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(vertexFilename), GL_VERTEX_SHADER));
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(fragmentFilename), GL_FRAGMENT_SHADER));
-    return new tdogl::Program(shaders);
-}
-
-
-// loads the content from file `filename` into gTexture
-static tdogl::Texture *LoadTexture(const char *filename) {
-    tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath(filename));
-    bmp.flipVertically();
-    return new tdogl::Texture(bmp);
-}
-
-static void LoadHallAsset() {
-    gHall.shaders = LoadShaders("hall-vertex-shader.txt", "hall-fragment-shader.txt");
-    gHall.drawType = GL_TRIANGLES;
-    gHall.drawStart = 0;
-    gHall.drawCount = 6 * 3 * 2;
-    glGenBuffers(1, &gHall.vbo);
-    glGenVertexArrays(1, &gHall.vao);
-
-    glBindVertexArray(gHall.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, gHall.vbo);
-
-    GLfloat vertexData[] = {
-            //  X     Y     Z
-            // bottom
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-
-            // top
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-
-            // front
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-
-            // back
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-
-            // left
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f,
-
-            // right
-            1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, 1.0f,
-
-    };
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData),vertexData, GL_STATIC_DRAW);
-
-    // connect the xyz to the "vert" attribute of the vertex shader
-    glEnableVertexAttribArray(gHall.shaders->attrib("vert"));
-    glVertexAttribPointer(gHall.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), NULL);
-
-    // unbind the VAO
-    glBindVertexArray(0);
+static void LoadAssets() {
+    gHall.init( "hall-fragment-shader.txt","hall-vertex-shader.txt");
+    gColumn.init("column-fragment-shader.txt", "hall-vertex-shader.txt");
 }
 
 // convenience function that returns a translation matrix
@@ -152,38 +61,25 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
 }
 
 static void CreateInstances() {
-    tdogl::ModelInstance hall;
-    hall.asset=&gHall;
-    hall.transform=scale(8,6,10);
+    tdogl::ModelInstance *hall=new tdogl::HallInstance;
+    hall->asset=&gHall;
+    hall->transform=scale(14,6,15);
     gInstances.push_back(hall);
-}
 
-static void RenderInstance(const tdogl::ModelInstance& inst) {
-    tdogl::ModelAsset* asset = inst.asset;
-    tdogl::Program* shaders = asset->shaders;
+//    tdogl::ModelInstance *hall1=new tdogl::HallInstance;
+//    hall1->asset=&gHall;
+//    hall1->transform= translate(-10.0f, 0.0f, 0.0f);
+//    gInstances.push_back(hall1);
 
-    //bind the shaders
-    shaders->use();
+    tdogl::ModelInstance *columnRight =new tdogl::ColumnInstance;
+    columnRight->asset=&gColumn;
+    columnRight->transform= translate(10.0f,0.0f,0.0f)*scale(0.4,4.0,0.4);
+    gInstances.push_back(columnRight);
 
-    //set the shader uniforms
-    shaders->setUniform("camera", gCamera.matrix());
-    shaders->setUniform("model", inst.transform);
-
-    if (asset->texture!= NULL) {
-        //bind the texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, asset->texture->object());
-        shaders->setUniform("tex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
-    }
-
-    //bind VAO and draw
-    glBindVertexArray(asset->vao);
-    glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
-
-    //unbind everything
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    shaders->stopUsing();
+    tdogl::ModelInstance *columnLeft=new tdogl::ColumnInstance;
+    columnLeft->asset=&gColumn;
+    columnLeft->transform= translate(-10.0f,0.0f,0.0f)*scale(0.4,4.0,0.4);
+    gInstances.push_back(columnLeft);
 }
 
 // draws a single frame
@@ -192,9 +88,9 @@ static void Render() {
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    std::list<tdogl::ModelInstance>::const_iterator it;
+    std::list<tdogl::ModelInstance*>::iterator it;
     for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
-        RenderInstance(*it);
+        (*it)->Render(gCamera);
     }
 
     glfwSwapBuffers();
@@ -271,16 +167,17 @@ int main(int argc, char *argv[]) {
 
     // OpenGL settings
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_NOTEQUAL);
+    glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // create buffer and fill it with the points of the triangle
-    LoadHallAsset();
+    LoadAssets();
     CreateInstances();
 
-    gCamera.setPosition(glm::vec3(-10, 10, 24));
-    gCamera.offsetOrientation(25.0f, 23.0f);
+    gCamera.setPosition(glm::vec3(0.0, 20, 35));
+    gCamera.offsetOrientation(25.0f, 0.0f);
     gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 
     // run while the window is open

@@ -24,6 +24,7 @@ set(SOURCE_FILES
 
 configure_file(resources/hall-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-fragment-shader.txt COPYONLY)
 configure_file(resources/hall-vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-vertex-shader.txt COPYONLY)
+configure_file(resources/column-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/column-fragment-shader.txt COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW)
