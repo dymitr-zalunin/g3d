@@ -4,13 +4,13 @@ uniform mat4 camera;
 uniform mat4 model;
 
 in vec3 vert;
-in vec2 vertTexCoord;
+in vec3 vertNormal;
 
-out vec2 fragTexCoord;
+out vec3 fragNormal;
+out vec3 fragVert;
 
 void main() {
-    // Pass the tex coord straight through to the fragment shader
-    fragTexCoord = vertTexCoord;
-    
+    fragVert=vert;
+    fragNormal=vertNormal;
     gl_Position = camera*model*vec4(vert, 1); //order multiplication : right to left
 }

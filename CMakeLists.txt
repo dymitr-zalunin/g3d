@@ -5,7 +5,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
-include_directories(thirdparty/stb_image)
+include_directories(thirdparty/stb_image thirdparty/glfw2/include thirdparty/glm thirdparty/assimp/include)
+
+LINK_DIRECTORIES(thirdparty/glfw2/lib thirdparty/assimp/lib)
 
 set(SOURCE_FILES
     source/Helper.cpp
@@ -25,6 +27,9 @@ set(SOURCE_FILES
 configure_file(resources/hall-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-fragment-shader.txt COPYONLY)
 configure_file(resources/hall-vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-vertex-shader.txt COPYONLY)
 configure_file(resources/column-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/column-fragment-shader.txt COPYONLY)
+configure_file(resources/Volleyball.obj ${EXECUTABLE_OUTPUT_PATH}/resources/Volleyball.obj COPYONLY)
+configure_file(resources/Volleyball.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/Volleyball.mtl COPYONLY)
+configure_file(resources/light.obj ${EXECUTABLE_OUTPUT_PATH}/resources/light.obj COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW)
+TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW assimp)

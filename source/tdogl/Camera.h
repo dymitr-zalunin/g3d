@@ -93,6 +93,9 @@ namespace tdogl {
         /** A unit vector representing the direction out of the top of the camera*/
         glm::vec3 up() const;
 
+        /** A unit vector representing the direction out of the bottom of the camera*/
+        glm::vec3 down() const;
+
         /**
         * The combined camera transformation matrix, including perspective projection.
         *

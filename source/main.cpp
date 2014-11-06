@@ -39,14 +39,18 @@
 const glm::vec2 SCREEN_SIZE(800, 600);
 
 // globals
-tdogl::HallAsset gHall;
-tdogl::ColumnAsset gColumn;
+//tdogl::ModelAsset gCuboid;
+tdogl::ModelAsset gCuboid;
+tdogl::ModelAsset gBall;
+tdogl::ModelAsset gSpot;
 std::list<tdogl::ModelInstance*> gInstances;
 tdogl::Camera gCamera;
 
 static void LoadAssets() {
-    gHall.init( "hall-fragment-shader.txt","hall-vertex-shader.txt");
-    gColumn.init("column-fragment-shader.txt", "hall-vertex-shader.txt");
+//    gCuboid.init("hall-vertex-shader.txt","column-fragment-shader.txt");
+    gCuboid.init("hall-vertex-shader.txt","column-fragment-shader.txt");
+    gSpot.init("light.obj","hall-vertex-shader.txt","column-fragment-shader.txt");
+    gBall.init("Volleyball.obj","hall-vertex-shader.txt","column-fragment-shader.txt");
 }
 
 // convenience function that returns a translation matrix
@@ -60,33 +64,77 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
+// convenience function that returns a rotation matrix
+glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
+    return glm::rotate(glm::mat4(), angle,glm::vec3(x,y,z));
+}
+
 static void CreateInstances() {
-    tdogl::ModelInstance *hall=new tdogl::HallInstance;
-    hall->asset=&gHall;
-    hall->transform=scale(14,6,15);
-    gInstances.push_back(hall);
 
-//    tdogl::ModelInstance *hall1=new tdogl::HallInstance;
-//    hall1->asset=&gHall;
-//    hall1->transform= translate(-10.0f, 0.0f, 0.0f);
-//    gInstances.push_back(hall1);
+    tdogl::ModelInstance *hall1=new tdogl::ModelInstance;
+    hall1->asset=&gCuboid;
+    hall1->transform= translate(0.0f, -6.5f, 0.0f)* scale(12.0f, 0.1f, 20.0f);
+    gInstances.push_back(hall1);
 
-    tdogl::ModelInstance *columnRight =new tdogl::ColumnInstance;
-    columnRight->asset=&gColumn;
-    columnRight->transform= translate(10.0f,0.0f,0.0f)*scale(0.4,4.0,0.4);
+    tdogl::ModelInstance *columnRight =new tdogl::ModelInstance;
+    columnRight->asset=&gCuboid;
+    columnRight->transform= translate(12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
     gInstances.push_back(columnRight);
 
-    tdogl::ModelInstance *columnLeft=new tdogl::ColumnInstance;
-    columnLeft->asset=&gColumn;
-    columnLeft->transform= translate(-10.0f,0.0f,0.0f)*scale(0.4,4.0,0.4);
+    tdogl::ModelInstance *columnLeft=new tdogl::ModelInstance;
+    columnLeft->asset=&gCuboid;
+    columnLeft->transform= translate(-12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
     gInstances.push_back(columnLeft);
+
+    tdogl::ModelInstance *cable1=new tdogl::ModelInstance;
+    cable1->asset=&gCuboid;
+    cable1->transform= translate(-10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable1);
+    tdogl::ModelInstance *cable2=new tdogl::ModelInstance;
+    cable2->asset=&gCuboid;
+    cable2->transform= translate(-10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable2);
+    tdogl::ModelInstance *cable3=new tdogl::ModelInstance;
+    cable3->asset=&gCuboid;
+    cable3->transform= translate(10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable3);
+    tdogl::ModelInstance *cable4=new tdogl::ModelInstance;
+    cable4->asset=&gCuboid;
+    cable4->transform= translate(10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable4);
+
+    tdogl::ModelInstance *net=new tdogl::ModelInstance;
+    net->asset=&gCuboid;
+    net->transform= translate(0.0f,4.2f,0.0f)*scale(10.0,2.0,0.1);
+    gInstances.push_back(net);
+
+    tdogl::ModelInstance *ball1=new tdogl::ModelInstance;
+    ball1->asset=&gBall;
+    ball1->transform=scale(0.2,0.2,0.2)*translate(-7.0f/0.2f, -6.5f/0.2f, 10.0f/0.2f);
+    gInstances.push_back(ball1);
+
+    tdogl::ModelInstance *ball2=new tdogl::ModelInstance;
+    ball2->asset=&gBall;
+    ball2->transform=scale(0.2,0.2,0.2)*translate(-7.0f/0.2f, -6.5f/0.2f, 0.0f);
+    gInstances.push_back(ball2);
+//
+    tdogl::ModelInstance *leftSpot =new tdogl::ModelInstance;
+    leftSpot->asset=&gSpot;
+    leftSpot->transform=scale(0.1,0.1,0.1) * translate(-10.0f/0.1, 10.5/0.1f, 0.0f)*rotate(1, 0, 0, 90.0f);
+//    leftSpot->light.position=glm::vec3(-10.0f, 10.5, 0.0f);
+    gInstances.push_back(leftSpot);
+
+    tdogl::ModelInstance *rightSpot =new tdogl::ModelInstance;
+    rightSpot->asset=&gSpot;
+    rightSpot->transform=scale(0.1,0.1,0.1) * translate(0.0f, 10.5/0.1f, -12.0f/0.1)*rotate(1, 0, 0, 90.0f);
+    gInstances.push_back(rightSpot);
 }
 
 // draws a single frame
 static void Render() {
 
     glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     std::list<tdogl::ModelInstance*>::iterator it;
     for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
@@ -112,11 +160,14 @@ void Update(float secondsElapsed) {
     } else if (glfwGetKey('D')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
     }
+
     if (glfwGetKey('Z')) {
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0, 1, 0));
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.down());
     } else if (glfwGetKey('X')) {
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0, 1, 0));
-    } else if (glfwGetKey(GLFW_KEY_RIGHT)) {
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.up());
+    }
+
+    if (glfwGetKey(GLFW_KEY_RIGHT)) {
         gCamera.offsetOrientation(0.0f, secondsElapsed * horizontalAngleSpeed);
     } else if (glfwGetKey(GLFW_KEY_LEFT)) {
         gCamera.offsetOrientation(0.0f, -secondsElapsed * horizontalAngleSpeed);
@@ -166,9 +217,14 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("OpenGL 3.2 API is not available.");
 
     // OpenGL settings
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_NOTEQUAL);
+//    glDepthMask(GL_TRUE);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glDisable( GL_CULL_FACE );
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_NOTEQUAL);
-    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -176,8 +232,8 @@ int main(int argc, char *argv[]) {
     LoadAssets();
     CreateInstances();
 
-    gCamera.setPosition(glm::vec3(0.0, 20, 35));
-    gCamera.offsetOrientation(25.0f, 0.0f);
+    gCamera.setPosition(glm::vec3(0,20,40));
+    gCamera.offsetOrientation(30.0f, 0.0f);
     gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 
     // run while the window is open

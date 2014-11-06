@@ -104,6 +104,11 @@ glm::vec3 Camera::up() const {
     return glm::vec3(up);
 }
 
+glm::vec3 Camera::down() const {
+    glm::vec4 down=glm::inverse(orientation())*-glm::vec4(0,1,0,1);
+    return glm::vec3(down);
+}
+
 glm::mat4 Camera::matrix() const {
     return projection()* view();
 }
