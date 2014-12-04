@@ -47,10 +47,11 @@ std::list<tdogl::ModelInstance*> gInstances;
 tdogl::Camera gCamera;
 
 static void LoadAssets() {
-//    gCuboid.init("hall-vertex-shader.txt","column-fragment-shader.txt");
-    gCuboid.init("hall-vertex-shader.txt","column-fragment-shader.txt");
-    gSpot.init("light.obj","hall-vertex-shader.txt","column-fragment-shader.txt");
-    gBall.init("Volleyball.obj","hall-vertex-shader.txt","column-fragment-shader.txt");
+    char const *vertexShaderFile = "scene.v.shader";
+    char const *fragmentShaderFile = "scene.f.shader";
+    gCuboid.init(vertexShaderFile, fragmentShaderFile);
+    gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
+    gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
 }
 
 // convenience function that returns a translation matrix
@@ -71,6 +72,11 @@ glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
 
 static void CreateInstances() {
 
+//    tdogl::ModelInstance *hall=new tdogl::ModelInstance;
+//    hall->asset=&gCuboid;
+//    hall->transform= scale(1.0f, 1.0f, 1.0f);
+//    gInstances.push_back(hall);
+//
     tdogl::ModelInstance *hall1=new tdogl::ModelInstance;
     hall1->asset=&gCuboid;
     hall1->transform= translate(0.0f, -6.5f, 0.0f)* scale(12.0f, 0.1f, 20.0f);
@@ -110,24 +116,44 @@ static void CreateInstances() {
 
     tdogl::ModelInstance *ball1=new tdogl::ModelInstance;
     ball1->asset=&gBall;
-    ball1->transform=scale(0.2,0.2,0.2)*translate(-7.0f/0.2f, -6.5f/0.2f, 10.0f/0.2f);
+    ball1->transform=translate(-7.0f, -6.5f, 10.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball1);
 
     tdogl::ModelInstance *ball2=new tdogl::ModelInstance;
     ball2->asset=&gBall;
-    ball2->transform=scale(0.2,0.2,0.2)*translate(-7.0f/0.2f, -6.5f/0.2f, 0.0f);
+    ball2->transform=translate(-5.0f, -6.5f, -13.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball2);
-//
+
+    tdogl::ModelInstance *ball3=new tdogl::ModelInstance;
+    ball3->asset=&gBall;
+    ball3->transform=translate(5.0f, -6.5f, -10.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball3);
+
+    tdogl::ModelInstance *ball4=new tdogl::ModelInstance;
+    ball4->asset=&gBall;
+    ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball4);
+
     tdogl::ModelInstance *leftSpot =new tdogl::ModelInstance;
     leftSpot->asset=&gSpot;
-    leftSpot->transform=scale(0.1,0.1,0.1) * translate(-10.0f/0.1, 10.5/0.1f, 0.0f)*rotate(1, 0, 0, 90.0f);
-//    leftSpot->light.position=glm::vec3(-10.0f, 10.5, 0.0f);
+    leftSpot->transform=translate(-12.0f, 6.5f, 20.0f)*rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
-    tdogl::ModelInstance *rightSpot =new tdogl::ModelInstance;
-    rightSpot->asset=&gSpot;
-    rightSpot->transform=scale(0.1,0.1,0.1) * translate(0.0f, 10.5/0.1f, -12.0f/0.1)*rotate(1, 0, 0, 90.0f);
-    gInstances.push_back(rightSpot);
+    tdogl::ModelInstance *leftSpot1 =new tdogl::ModelInstance;
+    leftSpot1->asset=&gSpot;
+    leftSpot1->transform=translate(12.0f, 6.5f, 20.0f)*rotate(0, 1, 0, 135.0f);
+    gInstances.push_back(leftSpot1);
+
+
+    tdogl::ModelInstance *rightSpot1 =new tdogl::ModelInstance;
+    rightSpot1->asset=&gSpot;
+    rightSpot1->transform=translate(12.0f, 6.5f, -20.0f)* rotate(0, 1, 0, -135.0f);;
+    gInstances.push_back(rightSpot1);
+
+    tdogl::ModelInstance *rightSpot2 =new tdogl::ModelInstance;
+    rightSpot2->asset=&gSpot;
+    rightSpot2->transform=translate(-12.0f, 6.5f, -20.0f)*rotate(0, 1, 0, -45.0f);
+    gInstances.push_back(rightSpot2);
 }
 
 // draws a single frame

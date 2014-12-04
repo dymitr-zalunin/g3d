@@ -24,12 +24,12 @@ set(SOURCE_FILES
     source/tdogl/Camera.cpp
     source/tdogl/Camera.h)
 
-configure_file(resources/hall-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-fragment-shader.txt COPYONLY)
-configure_file(resources/hall-vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/hall-vertex-shader.txt COPYONLY)
-configure_file(resources/column-fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/column-fragment-shader.txt COPYONLY)
+configure_file(resources/scene.f.shader ${EXECUTABLE_OUTPUT_PATH}/resources/scene.f.shader COPYONLY)
+configure_file(resources/scene.v.shader ${EXECUTABLE_OUTPUT_PATH}/resources/scene.v.shader COPYONLY)
 configure_file(resources/Volleyball.obj ${EXECUTABLE_OUTPUT_PATH}/resources/Volleyball.obj COPYONLY)
 configure_file(resources/Volleyball.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/Volleyball.mtl COPYONLY)
-configure_file(resources/light.obj ${EXECUTABLE_OUTPUT_PATH}/resources/light.obj COPYONLY)
+configure_file(resources/spotlight.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/spotlight.mtl COPYONLY)
+configure_file(resources/spotlight.obj ${EXECUTABLE_OUTPUT_PATH}/resources/spotlight.obj COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW assimp)

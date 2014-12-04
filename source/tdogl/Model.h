@@ -239,20 +239,45 @@ namespace tdogl {
 
         ModelAsset *asset;
         glm::mat4 transform;
-        Light light;
         std::vector<Light> lights;
 
         ModelInstance() :
                 asset(NULL),
                 transform() {
-            light.intensities = glm::vec3(1, 0, 0);
-            light.position = glm::vec4(-6.6, 25.5, 12.8,0);
-            light.attenuation = 0.0f;
-            light.ambientCoefficient = 0.0f;
-            light.coneAngle=90.0f;
-            light.coneDirection=glm::vec3(0,-1,0);
+
+            Light spotlight1;
+            spotlight1.intensities = glm::vec3(1, 1, 1);
+            spotlight1.position = glm::vec4(-3.1, 25.5, 10.0,1);
+            spotlight1.attenuation = 0.0f;
+            spotlight1.ambientCoefficient = 0.0f;
+            spotlight1.coneAngle=40.0f;
+            spotlight1.coneDirection=glm::vec3(0,-1,0);
+
+            Light spotlight2;
+            spotlight2.intensities = glm::vec3(1, 0, 0);
+            spotlight2.position = glm::vec4(3.1, 25.5, -14.0,1);
+            spotlight2.attenuation = 0.0f;
+            spotlight2.ambientCoefficient = 0.0f;
+            spotlight2.coneAngle=40.0f;
+            spotlight2.coneDirection=glm::vec3(0,-1,0);
+
+            Light directional_light;
+            directional_light.intensities = glm::vec3(1, 1, 1);
+            directional_light.position = glm::vec4(0, 40, 0, 0);
+            directional_light.attenuation = 0.5f;
+            directional_light.ambientCoefficient = 0.0f;
+
+            Light directional_light1;
+            directional_light1.intensities = glm::vec3(1, 1, 1);
+            directional_light1.position = glm::vec4(0, 40, 20, 0);
+            directional_light1.attenuation = 0.5f;
+            directional_light1.ambientCoefficient = 0.0f;
+
             lights=std::vector<Light>();
-            lights.push_back(light);
+//            lights.push_back(spotlight1);
+//            lights.push_back(spotlight2);
+            lights.push_back(directional_light);
+            lights.push_back(directional_light1);
         }
 
 //        virtual void Render(const Camera &gCamera) const = 0;
