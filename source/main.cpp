@@ -40,9 +40,7 @@ const glm::vec2 SCREEN_SIZE(800, 600);
 
 // globals
 //tdogl::ModelAsset gCuboid;
-tdogl::ModelAsset gCuboid;
-tdogl::ModelAsset gBall;
-tdogl::ModelAsset gSpot;
+tdogl::ModelAsset gCuboid, gBall, gSpot, gBench;
 std::list<tdogl::ModelInstance*> gInstances;
 tdogl::Camera gCamera;
 
@@ -52,6 +50,7 @@ static void LoadAssets() {
     gCuboid.init(vertexShaderFile, fragmentShaderFile);
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
     gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
+    gBench.init("bench.obj",vertexShaderFile,fragmentShaderFile);
 }
 
 // convenience function that returns a translation matrix
@@ -72,11 +71,11 @@ glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
 
 static void CreateInstances() {
 
-//    tdogl::ModelInstance *hall=new tdogl::ModelInstance;
-//    hall->asset=&gCuboid;
-//    hall->transform= scale(1.0f, 1.0f, 1.0f);
-//    gInstances.push_back(hall);
-//
+    tdogl::ModelInstance *hall=new tdogl::ModelInstance;
+    hall->asset=&gCuboid;
+    hall->transform= scale(1.0f, 1.0f, 1.0f);
+    gInstances.push_back(hall);
+
     tdogl::ModelInstance *hall1=new tdogl::ModelInstance;
     hall1->asset=&gCuboid;
     hall1->transform= translate(0.0f, -6.5f, 0.0f)* scale(12.0f, 0.1f, 20.0f);
@@ -154,6 +153,16 @@ static void CreateInstances() {
     rightSpot2->asset=&gSpot;
     rightSpot2->transform=translate(-12.0f, 6.5f, -20.0f)*rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
+
+    tdogl::ModelInstance *bench1 =new tdogl::ModelInstance;
+    bench1->asset=&gBench;
+    bench1->transform=translate(-30.0f, -5.3f, -16.0f)*scale(6,5,10);
+    gInstances.push_back(bench1);
+
+    tdogl::ModelInstance *bench2 =new tdogl::ModelInstance;
+    bench2->asset=&gBench;
+    bench2->transform=translate(-30.0f, -5.3f, 16.0f)*scale(6,5,10);
+    gInstances.push_back(bench2);
 }
 
 // draws a single frame

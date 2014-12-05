@@ -30,6 +30,8 @@ configure_file(resources/Volleyball.obj ${EXECUTABLE_OUTPUT_PATH}/resources/Voll
 configure_file(resources/Volleyball.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/Volleyball.mtl COPYONLY)
 configure_file(resources/spotlight.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/spotlight.mtl COPYONLY)
 configure_file(resources/spotlight.obj ${EXECUTABLE_OUTPUT_PATH}/resources/spotlight.obj COPYONLY)
+configure_file(resources/bench.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/bench.mtl COPYONLY)
+configure_file(resources/bench.obj ${EXECUTABLE_OUTPUT_PATH}/resources/bench.obj COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW assimp)
