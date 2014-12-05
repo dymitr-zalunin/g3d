@@ -101,8 +101,8 @@ namespace tdogl {
                 meshes() {
         }
 
-        void init(const char *vertexFile, const char *fragmentFile) {
-            Mesh *aMesh = create_mesh(vertexFile, fragmentFile, 36, sizeof(CUBE), CUBE);
+        void init(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
+            Mesh *aMesh = create_mesh(vertexFile, fragmentFile, 36, sizeof(CUBE), CUBE,materialDiffuseColor);
             this->meshes.push_back(aMesh);
         }
 
@@ -145,8 +145,9 @@ namespace tdogl {
             }
         }
 
-        Mesh *create_mesh(char const *vertexFile, char const *fragmentFile, int size, GLsizeiptr ptrSize, GLfloat *array) {
+        Mesh *create_mesh(char const *vertexFile, char const *fragmentFile, int size, GLsizeiptr ptrSize, GLfloat *array,glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
             Mesh *aMesh = new Mesh;
+            aMesh->diffuseColor=materialDiffuseColor;
             aMesh->shaders = LoadShaders(vertexFile, fragmentFile);
             aMesh->drawType = GL_TRIANGLES;
             aMesh->drawStart = 0;
