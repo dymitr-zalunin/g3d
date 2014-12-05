@@ -1,4 +1,4 @@
-#Projekt z Grafiki 3D
+#Computer graphics 3D
 
 ##Requirements
 * cmake >=3.0.0
