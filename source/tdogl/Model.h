@@ -67,9 +67,9 @@ namespace tdogl {
     struct Mesh {
         GLuint vbo;
         GLuint vao;
-        glm::vec3 ambientColor;
-        glm::vec3 diffuseColor;
-        glm::vec3 specularColor;
+        glm::vec4 ambientColor;
+        glm::vec4 diffuseColor;
+        glm::vec4 specularColor;
         tdogl::Program *shaders;
         float shininess;
         GLenum drawType;
@@ -79,9 +79,9 @@ namespace tdogl {
         Mesh() :
                 vao(0),
                 vbo(0),
-                ambientColor(glm::vec3(1.0f, 1.0f, 1.0f)),
-                diffuseColor(glm::vec3(1.0f, 1.0f, 1.0f)),
-                specularColor(glm::vec3(1.0f, 1.0f, 1.0f)),
+                ambientColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
+                diffuseColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
+                specularColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
                 shininess(1),
                 shaders(NULL),
                 drawStart(0),
@@ -198,10 +198,10 @@ namespace tdogl {
             }
         }
 
-        glm::vec3 get_material_color(const aiMaterial *material, char const *pKey, unsigned int type, unsigned int index) {
+        glm::vec4 get_material_color(const aiMaterial *material, char const *pKey, unsigned int type, unsigned int index) {
             aiColor4D color;
             aiGetMaterialColor(material, pKey, type, index, &color);
-            return glm::vec3(color.r, color.g, color.b);
+            return glm::vec4(color.r, color.g, color.b,color.a);
         }
 
         // returns the full path to the file `fileName` in the resources directory of the app bundle
