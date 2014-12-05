@@ -37,16 +37,16 @@
 #include "tdogl/Model.h"
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
-
 // globals
 //tdogl::ModelAsset gCuboid;
-tdogl::ModelAsset gCuboid, gBall, gSpot, gBench;
+tdogl::ModelAsset gHall ,gCuboid, gBall, gSpot, gBench;
 std::list<tdogl::ModelInstance*> gInstances;
 tdogl::Camera gCamera;
 
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
     char const *fragmentShaderFile = "scene.f.shader";
+    gHall.init(vertexShaderFile, fragmentShaderFile,glm::vec4(0.0f,1.0f,0.0f,1.0f));
     gCuboid.init(vertexShaderFile, fragmentShaderFile);
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
     gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
@@ -72,8 +72,8 @@ glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
 static void CreateInstances() {
 
     tdogl::ModelInstance *hall=new tdogl::ModelInstance;
-    hall->asset=&gCuboid;
-    hall->transform= scale(1.0f, 1.0f, 1.0f);
+    hall->asset=&gHall;
+    hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
     gInstances.push_back(hall);
 
     tdogl::ModelInstance *hall1=new tdogl::ModelInstance;
@@ -133,25 +133,26 @@ static void CreateInstances() {
     ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball4);
 
+    const float sufit = 9.5f;
     tdogl::ModelInstance *leftSpot =new tdogl::ModelInstance;
     leftSpot->asset=&gSpot;
-    leftSpot->transform=translate(-12.0f, 6.5f, 20.0f)*rotate(0, 1, 0, 45.0f);
+    leftSpot->transform=translate(-12.0f, sufit, 20.0f)*rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
     tdogl::ModelInstance *leftSpot1 =new tdogl::ModelInstance;
     leftSpot1->asset=&gSpot;
-    leftSpot1->transform=translate(12.0f, 6.5f, 20.0f)*rotate(0, 1, 0, 135.0f);
+    leftSpot1->transform=translate(12.0f, sufit, 20.0f)*rotate(0, 1, 0, 135.0f);
     gInstances.push_back(leftSpot1);
 
 
     tdogl::ModelInstance *rightSpot1 =new tdogl::ModelInstance;
     rightSpot1->asset=&gSpot;
-    rightSpot1->transform=translate(12.0f, 6.5f, -20.0f)* rotate(0, 1, 0, -135.0f);;
+    rightSpot1->transform=translate(12.0f, sufit, -20.0f)* rotate(0, 1, 0, -135.0f);;
     gInstances.push_back(rightSpot1);
 
     tdogl::ModelInstance *rightSpot2 =new tdogl::ModelInstance;
     rightSpot2->asset=&gSpot;
-    rightSpot2->transform=translate(-12.0f, 6.5f, -20.0f)*rotate(0, 1, 0, -45.0f);
+    rightSpot2->transform=translate(-12.0f, sufit, -20.0f)*rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
 
     tdogl::ModelInstance *bench1 =new tdogl::ModelInstance;
@@ -267,7 +268,7 @@ int main(int argc, char *argv[]) {
     LoadAssets();
     CreateInstances();
 
-    gCamera.setPosition(glm::vec3(0,20,40));
+    gCamera.setPosition(glm::vec3(0,13,25));
     gCamera.offsetOrientation(30.0f, 0.0f);
     gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 

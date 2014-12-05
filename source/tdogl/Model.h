@@ -262,23 +262,23 @@ namespace tdogl {
             spotlight2.coneAngle=40.0f;
             spotlight2.coneDirection=glm::vec3(0,-1,0);
 
-            Light directional_light;
-            directional_light.intensities = glm::vec3(1, 1, 1);
-            directional_light.position = glm::vec4(0, 40, 0, 0);
-            directional_light.attenuation = 0.5f;
-            directional_light.ambientCoefficient = 0.0f;
-
             Light directional_light1;
             directional_light1.intensities = glm::vec3(1, 1, 1);
-            directional_light1.position = glm::vec4(0, 40, 20, 0);
+            directional_light1.position = glm::vec4(-100, 100, 100, 0);
             directional_light1.attenuation = 0.5f;
             directional_light1.ambientCoefficient = 0.0f;
+
+            Light directional_light2;
+            directional_light2.intensities = glm::vec3(1, 1, 1);
+            directional_light2.position = glm::vec4(100, -100, -100, 0);
+            directional_light2.attenuation = 0.5f;
+            directional_light2.ambientCoefficient = 0.0f;
 
             lights=std::vector<Light>();
 //            lights.push_back(spotlight1);
 //            lights.push_back(spotlight2);
-            lights.push_back(directional_light);
             lights.push_back(directional_light1);
+            lights.push_back(directional_light2);
         }
 
 //        virtual void Render(const Camera &gCamera) const = 0;
