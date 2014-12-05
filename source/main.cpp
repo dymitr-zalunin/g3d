@@ -30,18 +30,18 @@
 #include <stdexcept>
 #include <cmath>
 #include <list>
-// tdogl classes
-#include "tdogl/Program.h"
-#include "tdogl/Texture.h"
-#include "tdogl/Camera.h"
-#include "tdogl/Model.h"
+// gk3d classes
+#include "gk3d/Program.h"
+#include "gk3d/Texture.h"
+#include "gk3d/Camera.h"
+#include "gk3d/Model.h"
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
 // globals
-//tdogl::ModelAsset gCuboid;
-tdogl::ModelAsset gHall ,gCuboid, gBall, gSpot, gBench;
-std::list<tdogl::ModelInstance*> gInstances;
-tdogl::Camera gCamera;
+//gk3d::ModelAsset gCuboid;
+gk3d::ModelAsset gHall ,gCuboid, gBall, gSpot, gBench;
+std::list<gk3d::ModelInstance*> gInstances;
+gk3d::Camera gCamera;
 
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
@@ -71,96 +71,96 @@ glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
 
 static void CreateInstances() {
 
-    tdogl::ModelInstance *hall=new tdogl::ModelInstance;
+    gk3d::ModelInstance *hall=new gk3d::ModelInstance;
     hall->asset=&gHall;
     hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
     gInstances.push_back(hall);
 
-    tdogl::ModelInstance *hall1=new tdogl::ModelInstance;
+    gk3d::ModelInstance *hall1=new gk3d::ModelInstance;
     hall1->asset=&gCuboid;
     hall1->transform= translate(0.0f, -6.5f, 0.0f)* scale(12.0f, 0.1f, 20.0f);
     gInstances.push_back(hall1);
 
-    tdogl::ModelInstance *columnRight =new tdogl::ModelInstance;
+    gk3d::ModelInstance *columnRight =new gk3d::ModelInstance;
     columnRight->asset=&gCuboid;
     columnRight->transform= translate(12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
     gInstances.push_back(columnRight);
 
-    tdogl::ModelInstance *columnLeft=new tdogl::ModelInstance;
+    gk3d::ModelInstance *columnLeft=new gk3d::ModelInstance;
     columnLeft->asset=&gCuboid;
     columnLeft->transform= translate(-12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
     gInstances.push_back(columnLeft);
 
-    tdogl::ModelInstance *cable1=new tdogl::ModelInstance;
+    gk3d::ModelInstance *cable1=new gk3d::ModelInstance;
     cable1->asset=&gCuboid;
     cable1->transform= translate(-10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
     gInstances.push_back(cable1);
-    tdogl::ModelInstance *cable2=new tdogl::ModelInstance;
+    gk3d::ModelInstance *cable2=new gk3d::ModelInstance;
     cable2->asset=&gCuboid;
     cable2->transform= translate(-10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
     gInstances.push_back(cable2);
-    tdogl::ModelInstance *cable3=new tdogl::ModelInstance;
+    gk3d::ModelInstance *cable3=new gk3d::ModelInstance;
     cable3->asset=&gCuboid;
     cable3->transform= translate(10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
     gInstances.push_back(cable3);
-    tdogl::ModelInstance *cable4=new tdogl::ModelInstance;
+    gk3d::ModelInstance *cable4=new gk3d::ModelInstance;
     cable4->asset=&gCuboid;
     cable4->transform= translate(10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
     gInstances.push_back(cable4);
 
-    tdogl::ModelInstance *net=new tdogl::ModelInstance;
+    gk3d::ModelInstance *net=new gk3d::ModelInstance;
     net->asset=&gCuboid;
     net->transform= translate(0.0f,4.2f,0.0f)*scale(10.0,2.0,0.1);
     gInstances.push_back(net);
 
-    tdogl::ModelInstance *ball1=new tdogl::ModelInstance;
+    gk3d::ModelInstance *ball1=new gk3d::ModelInstance;
     ball1->asset=&gBall;
     ball1->transform=translate(-7.0f, -6.5f, 10.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball1);
 
-    tdogl::ModelInstance *ball2=new tdogl::ModelInstance;
+    gk3d::ModelInstance *ball2=new gk3d::ModelInstance;
     ball2->asset=&gBall;
     ball2->transform=translate(-5.0f, -6.5f, -13.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball2);
 
-    tdogl::ModelInstance *ball3=new tdogl::ModelInstance;
+    gk3d::ModelInstance *ball3=new gk3d::ModelInstance;
     ball3->asset=&gBall;
     ball3->transform=translate(5.0f, -6.5f, -10.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball3);
 
-    tdogl::ModelInstance *ball4=new tdogl::ModelInstance;
+    gk3d::ModelInstance *ball4=new gk3d::ModelInstance;
     ball4->asset=&gBall;
     ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball4);
 
     const float sufit = 9.5f;
-    tdogl::ModelInstance *leftSpot =new tdogl::ModelInstance;
+    gk3d::ModelInstance *leftSpot =new gk3d::ModelInstance;
     leftSpot->asset=&gSpot;
     leftSpot->transform=translate(-20.0f, sufit, 27.0f)*rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
-    tdogl::ModelInstance *leftSpot1 =new tdogl::ModelInstance;
+    gk3d::ModelInstance *leftSpot1 =new gk3d::ModelInstance;
     leftSpot1->asset=&gSpot;
     leftSpot1->transform=translate(18.0f, sufit, 27.0f)*rotate(0, 1, 0, 135.0f);
     gInstances.push_back(leftSpot1);
 
 
-    tdogl::ModelInstance *rightSpot1 =new tdogl::ModelInstance;
+    gk3d::ModelInstance *rightSpot1 =new gk3d::ModelInstance;
     rightSpot1->asset=&gSpot;
     rightSpot1->transform=translate(18.0f, sufit, -27.0f)* rotate(0, 1, 0, -135.0f);;
     gInstances.push_back(rightSpot1);
 
-    tdogl::ModelInstance *rightSpot2 =new tdogl::ModelInstance;
+    gk3d::ModelInstance *rightSpot2 =new gk3d::ModelInstance;
     rightSpot2->asset=&gSpot;
     rightSpot2->transform=translate(-20.0f, sufit, -27.0f)*rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
 
-    tdogl::ModelInstance *bench1 =new tdogl::ModelInstance;
+    gk3d::ModelInstance *bench1 =new gk3d::ModelInstance;
     bench1->asset=&gBench;
     bench1->transform=translate(-30.0f, -5.3f, -16.0f)*scale(6,5,10);
     gInstances.push_back(bench1);
 
-    tdogl::ModelInstance *bench2 =new tdogl::ModelInstance;
+    gk3d::ModelInstance *bench2 =new gk3d::ModelInstance;
     bench2->asset=&gBench;
     bench2->transform=translate(-30.0f, -5.3f, 16.0f)*scale(6,5,10);
     gInstances.push_back(bench2);
@@ -172,7 +172,7 @@ static void Render() {
     glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    std::list<tdogl::ModelInstance*>::iterator it;
+    std::list<gk3d::ModelInstance*>::iterator it;
     for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
         (*it)->Render(gCamera);
     }

@@ -23,7 +23,7 @@
 #define STBI_FAILURE_USERMSG
 #include <stb_image.c>
 
-using namespace tdogl;
+using namespace gk3d;
 
 
 inline unsigned char AverageRGB(unsigned char rgb[3]) {

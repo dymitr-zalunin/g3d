@@ -19,7 +19,7 @@
 #include "Texture.h"
 #include <stdexcept>
 
-using namespace tdogl;
+using namespace gk3d;
 
 static GLenum TextureFormatForBitmapFormat(Bitmap::Format format)
 {

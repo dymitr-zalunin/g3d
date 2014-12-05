@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace tdogl {
+namespace gk3d {
 
     /**
     * A first person shooter type of camera.

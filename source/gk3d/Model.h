@@ -11,7 +11,7 @@
 #include <GL/glext.h>
 #include <GL/gl.h>
 
-namespace tdogl {
+namespace gk3d {
 
     static GLfloat CUBE_INWARD[] = {
             //  X     Y     Z  Normal
@@ -122,7 +122,7 @@ namespace tdogl {
         glm::vec4 ambientColor;
         glm::vec4 diffuseColor;
         glm::vec4 specularColor;
-        tdogl::Program *shaders;
+        gk3d::Program *shaders;
         float shininess;
         GLenum drawType;
         GLint drawStart;
@@ -143,7 +143,7 @@ namespace tdogl {
     };
 
     struct ModelAsset {
-        tdogl::Program *shaders;
+        gk3d::Program *shaders;
         std::vector<Texture *> textures;
         std::vector<Mesh *> meshes;
 
@@ -268,18 +268,18 @@ namespace tdogl {
         }
 
         // loads the vertex shader and fragment shader, and links them to make the global gProgram
-        static tdogl::Program *LoadShaders(const char *vertexFilename, const char *fragmentFilename) {
-            std::vector<tdogl::Shader> shaders;
-            shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(vertexFilename), GL_VERTEX_SHADER));
-            shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath(fragmentFilename), GL_FRAGMENT_SHADER));
-            return new tdogl::Program(shaders);
+        static gk3d::Program *LoadShaders(const char *vertexFilename, const char *fragmentFilename) {
+            std::vector<gk3d::Shader> shaders;
+            shaders.push_back(gk3d::Shader::shaderFromFile(ResourcePath(vertexFilename), GL_VERTEX_SHADER));
+            shaders.push_back(gk3d::Shader::shaderFromFile(ResourcePath(fragmentFilename), GL_FRAGMENT_SHADER));
+            return new gk3d::Program(shaders);
         }
 
         // loads the content from file `filename` into gTexture
-        static tdogl::Texture *LoadTexture(const char *filename) {
-            tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath(filename));
+        static gk3d::Texture *LoadTexture(const char *filename) {
+            gk3d::Bitmap bmp = gk3d::Bitmap::bitmapFromFile(ResourcePath(filename));
             bmp.flipVertically();
-            return new tdogl::Texture(bmp);
+            return new gk3d::Texture(bmp);
         }
 
     };
@@ -376,11 +376,11 @@ namespace tdogl {
 
         void Render(const Camera &gCamera) const {
 
-            tdogl::ModelAsset *asset = this->asset;
+            gk3d::ModelAsset *asset = this->asset;
             for (int i = 0; i < asset->meshes.size(); ++i) {
 
-                tdogl::Mesh *mesh = asset->meshes[i];
-                tdogl::Program *shaders = mesh->shaders;
+                gk3d::Mesh *mesh = asset->meshes[i];
+                gk3d::Program *shaders = mesh->shaders;
 
                 //bind the shaders
                 shaders->use();
@@ -423,7 +423,7 @@ namespace tdogl {
         }
 
         template <typename T>
-        void SetLightUniform(tdogl::Program* shaders, const char* propertyName, size_t lightIndex, T& value) const{
+        void SetLightUniform(gk3d::Program* shaders, const char* propertyName, size_t lightIndex, T& value) const{
             std::ostringstream ss;
             ss << "lights[" << lightIndex << "]." << propertyName;
             std::string uniformName = ss.str();

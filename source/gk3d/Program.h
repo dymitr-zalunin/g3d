@@ -22,7 +22,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace tdogl {
+namespace gk3d {
 
     /**
      Represents an OpenGL program made by linking shaders.
@@ -30,13 +30,13 @@ namespace tdogl {
     class Program { 
     public:
         /**
-         Creates a program by linking a list of tdogl::Shader objects
+         Creates a program by linking a list of gk3d::Shader objects
          
          @param shaders  The shaders to link together to make the program
          
          @throws std::exception if an error occurs.
          
-         @see tdogl::Shader
+         @see gk3d::Shader
          */
         Program(const std::vector<Shader>& shaders);
         ~Program();

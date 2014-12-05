@@ -23,7 +23,7 @@
 #include <cassert>
 #include <sstream>
 
-using namespace tdogl;
+using namespace gk3d;
 
 Shader::Shader(const std::string& shaderCode, GLenum shaderType) :
     _object(0),

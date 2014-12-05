@@ -20,13 +20,13 @@
 
 #include <string>
 
-namespace tdogl {
+namespace gk3d {
     
     /**
      A bitmap image (i.e. a grid of pixels).
      
      This is not really related to OpenGL, but can be used to make OpenGL textures using
-     tdogl::Texture.
+     gk3d::Texture.
      */
     class Bitmap {
     public:
@@ -55,7 +55,7 @@ namespace tdogl {
         ~Bitmap();
         
         /**
-         Tries to load the given file into a tdogl::Bitmap.
+         Tries to load the given file into a gk3d::Bitmap.
          */
         static Bitmap bitmapFromFile(std::string filePath);
                 

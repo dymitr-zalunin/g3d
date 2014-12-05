@@ -13,16 +13,16 @@ set(SOURCE_FILES
     source/Helper.cpp
     source/Helper.h
     source/main.cpp
-    source/tdogl/Program.cpp
-    source/tdogl/Program.h
-    source/tdogl/Shader.cpp
-    source/tdogl/Shader.h
-    source/tdogl/Texture.h
-    source/tdogl/Texture.cpp
-    source/tdogl/Bitmap.cpp
-    source/tdogl/Bitmap.h
-    source/tdogl/Camera.cpp
-    source/tdogl/Camera.h)
+    source/gk3d/Program.cpp
+    source/gk3d/Program.h
+    source/gk3d/Shader.cpp
+    source/gk3d/Shader.h
+    source/gk3d/Texture.h
+    source/gk3d/Texture.cpp
+    source/gk3d/Bitmap.cpp
+    source/gk3d/Bitmap.h
+    source/gk3d/Camera.cpp
+    source/gk3d/Camera.h)
 
 configure_file(resources/scene.f.shader ${EXECUTABLE_OUTPUT_PATH}/resources/scene.f.shader COPYONLY)
 configure_file(resources/scene.v.shader ${EXECUTABLE_OUTPUT_PATH}/resources/scene.v.shader COPYONLY)

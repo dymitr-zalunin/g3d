@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-using namespace tdogl;
+using namespace gk3d;
 
 static const float MaxVerticalAngle = 85.0f;
 
