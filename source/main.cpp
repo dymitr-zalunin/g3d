@@ -223,6 +223,11 @@ void Update(float secondsElapsed) {
     glfwSetMouseWheel(0);
 }
 
+void GLFWCALL reshape( int width, int height ) {
+    glViewport(0, 0, width, height);
+    gCamera.setViewportAspectRatio((float)width/height);
+}
+
 // the program starts here
 int main(int argc, char *argv[]) {
     // initialise GLFW
@@ -233,9 +238,10 @@ int main(int argc, char *argv[]) {
     glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 2);
-    glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
     if (!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
         throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
+
+    glfwSetWindowSizeCallback( reshape );
 
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
@@ -253,12 +259,6 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("OpenGL 3.2 API is not available.");
 
     // OpenGL settings
-//    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_NOTEQUAL);
-//    glDepthMask(GL_TRUE);
-//    glEnable(GL_BLEND);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glDisable( GL_CULL_FACE );
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
