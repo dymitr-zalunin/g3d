@@ -13,6 +13,58 @@
 
 namespace tdogl {
 
+    static GLfloat CUBE_INWARD[] = {
+            //  X     Y     Z  Normal
+            // bottom
+            -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+            -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+
+            // top
+            -1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+            1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+            1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+
+            // front
+            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+
+            // back
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+
+            // left
+            -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+
+            // right
+            1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+            1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f
+    };
+
+
     static GLfloat CUBE[] = {
             //  X     Y     Z  Normal
             // bottom
@@ -99,6 +151,11 @@ namespace tdogl {
                 shaders(NULL),
                 textures(),
                 meshes() {
+        }
+
+        void init_cube_inward(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
+            Mesh *aMesh = create_mesh(vertexFile, fragmentFile, 36, sizeof(CUBE_INWARD), CUBE_INWARD,materialDiffuseColor);
+            this->meshes.push_back(aMesh);
         }
 
         void init(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
@@ -246,39 +303,73 @@ namespace tdogl {
                 asset(NULL),
                 transform() {
 
+            Light spotlight_exit;
+            spotlight_exit.intensities = glm::vec3(0, 1, 0);
+            spotlight_exit.position = glm::vec4(10.0, 8.5, 0.0,1);
+            spotlight_exit.attenuation = 0.0f;
+            spotlight_exit.ambientCoefficient = 0.0f;
+            spotlight_exit.coneAngle=0.5f;
+            spotlight_exit.coneDirection=glm::vec3(-10,0,0);
+
             Light spotlight1;
-            spotlight1.intensities = glm::vec3(1, 1, 1);
-            spotlight1.position = glm::vec4(-3.1, 25.5, 10.0,1);
+            spotlight1.intensities = glm::vec3(1, 1, 0);
+            spotlight1.position = glm::vec4(18.0, 9.5, -27.0,1);
             spotlight1.attenuation = 0.0f;
             spotlight1.ambientCoefficient = 0.0f;
-            spotlight1.coneAngle=40.0f;
-            spotlight1.coneDirection=glm::vec3(0,-1,0);
+            spotlight1.coneAngle=10.0f;
+            spotlight1.coneDirection=glm::vec3(-1,-1,1);
 
             Light spotlight2;
-            spotlight2.intensities = glm::vec3(1, 0, 0);
-            spotlight2.position = glm::vec4(3.1, 25.5, -14.0,1);
+            spotlight2.intensities = glm::vec3(1, 1, 0);
+            spotlight2.position = glm::vec4(18.0, 9.5, 27.0,1);
             spotlight2.attenuation = 0.0f;
             spotlight2.ambientCoefficient = 0.0f;
-            spotlight2.coneAngle=40.0f;
-            spotlight2.coneDirection=glm::vec3(0,-1,0);
+            spotlight2.coneAngle=10.0f;
+            spotlight2.coneDirection=glm::vec3(-1,-1,-1);
+
+            Light spotlight3;
+            spotlight3.intensities = glm::vec3(1, 0, 1);
+            spotlight3.position = glm::vec4(-20.0, 9.5, -27.0,1);
+            spotlight3.attenuation = 0.0f;
+            spotlight3.ambientCoefficient = 0.0f;
+            spotlight3.coneAngle=10.0f;
+            spotlight3.coneDirection=glm::vec3(1,-1,1);
+
+            Light spotlight4;
+            spotlight4.intensities = glm::vec3(0, 1, 1);
+            spotlight4.position = glm::vec4(-20.0, 9.5, 27.0,1);
+            spotlight4.attenuation = 0.0f;
+            spotlight4.ambientCoefficient = 0.0f;
+            spotlight4.coneAngle=10.0f;
+            spotlight4.coneDirection=glm::vec3(1,-1,-1);
 
             Light directional_light1;
-            directional_light1.intensities = glm::vec3(1, 1, 1);
-            directional_light1.position = glm::vec4(-100, 100, 100, 0);
+            directional_light1.intensities = glm::vec3(0.1, 0.1, 0.1);
+            directional_light1.position = glm::vec4(18.0, 9.5, 27.0,0);
             directional_light1.attenuation = 0.5f;
             directional_light1.ambientCoefficient = 0.0f;
 
             Light directional_light2;
-            directional_light2.intensities = glm::vec3(1, 1, 1);
-            directional_light2.position = glm::vec4(100, -100, -100, 0);
-            directional_light2.attenuation = 0.5f;
+            directional_light2.intensities = glm::vec3(0.1, 0.1, 0.1);
+            directional_light2.position = glm::vec4(-20.0, 9.5, -27.0,0);
+            directional_light2.attenuation = 0.1f;
             directional_light2.ambientCoefficient = 0.0f;
 
+            Light directional_light3;
+            directional_light3.intensities = glm::vec3(0.1, 0.1, 0.1);
+            directional_light3.position = glm::vec4(-20.0, -9.5, -27.0,0);
+            directional_light3.attenuation = 0.1f;
+            directional_light3.ambientCoefficient = 0.0f;
+
             lights=std::vector<Light>();
-//            lights.push_back(spotlight1);
-//            lights.push_back(spotlight2);
+            lights.push_back(spotlight_exit);
+            lights.push_back(spotlight1);
+            lights.push_back(spotlight2);
+            lights.push_back(spotlight3);
+            lights.push_back(spotlight4);
             lights.push_back(directional_light1);
             lights.push_back(directional_light2);
+            lights.push_back(directional_light3);
         }
 
 //        virtual void Render(const Camera &gCamera) const = 0;

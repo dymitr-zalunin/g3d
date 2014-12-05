@@ -46,7 +46,7 @@ tdogl::Camera gCamera;
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
     char const *fragmentShaderFile = "scene.f.shader";
-    gHall.init(vertexShaderFile, fragmentShaderFile,glm::vec4(0.0f,1.0f,0.0f,1.0f));
+    gHall.init_cube_inward(vertexShaderFile, fragmentShaderFile,glm::vec4(0.72156862745f,0.01176470588f,1.0f,1.0f));
     gCuboid.init(vertexShaderFile, fragmentShaderFile);
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
     gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
@@ -136,23 +136,23 @@ static void CreateInstances() {
     const float sufit = 9.5f;
     tdogl::ModelInstance *leftSpot =new tdogl::ModelInstance;
     leftSpot->asset=&gSpot;
-    leftSpot->transform=translate(-12.0f, sufit, 20.0f)*rotate(0, 1, 0, 45.0f);
+    leftSpot->transform=translate(-20.0f, sufit, 27.0f)*rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
     tdogl::ModelInstance *leftSpot1 =new tdogl::ModelInstance;
     leftSpot1->asset=&gSpot;
-    leftSpot1->transform=translate(12.0f, sufit, 20.0f)*rotate(0, 1, 0, 135.0f);
+    leftSpot1->transform=translate(18.0f, sufit, 27.0f)*rotate(0, 1, 0, 135.0f);
     gInstances.push_back(leftSpot1);
 
 
     tdogl::ModelInstance *rightSpot1 =new tdogl::ModelInstance;
     rightSpot1->asset=&gSpot;
-    rightSpot1->transform=translate(12.0f, sufit, -20.0f)* rotate(0, 1, 0, -135.0f);;
+    rightSpot1->transform=translate(18.0f, sufit, -27.0f)* rotate(0, 1, 0, -135.0f);;
     gInstances.push_back(rightSpot1);
 
     tdogl::ModelInstance *rightSpot2 =new tdogl::ModelInstance;
     rightSpot2->asset=&gSpot;
-    rightSpot2->transform=translate(-12.0f, sufit, -20.0f)*rotate(0, 1, 0, -45.0f);
+    rightSpot2->transform=translate(-20.0f, sufit, -27.0f)*rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
 
     tdogl::ModelInstance *bench1 =new tdogl::ModelInstance;
