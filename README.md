@@ -6,7 +6,7 @@
   
 ##Building and runnig
 ```
-git clone https://github.com/dymitr-zalunin/g3d.git
+git clone https://github.com/dymitr-zalunin/g3d.git && git checkout dev
 mkdir build && cd build
 cmake .. && make
 bin/volleyball_court # running the app
