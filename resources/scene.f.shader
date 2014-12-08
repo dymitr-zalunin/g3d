@@ -7,6 +7,7 @@ uniform float materialShininess;
 uniform vec4 materialSpecularColor;
 uniform vec4 materialDiffuseColor;
 uniform vec4 materialAmbientColor;
+uniform float useTexture;
 
 #define MAX_LIGHTS 10
 uniform int numLights;
@@ -19,13 +20,20 @@ uniform struct Light {
    vec3 coneDirection;
 } lights[MAX_LIGHTS];
 
+struct Material {
+    vec4 specularColor;
+    vec4 diffuseColor;
+    vec4 ambientColor;
+    float shininess;
+} material;
+
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec3 fragVert;
 
 out vec4 finalColor;
 
-vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, vec3 surfaceToCamera) {
+vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, vec3 surfaceToCamera, Material material) {
     vec3 surfaceToLight;
     float attenuation = 1.0;
     if(light.position.w == 0.0) {
@@ -46,7 +54,7 @@ vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, ve
     }
 
     //ambient
-    vec3 ambient = light.ambientCoefficient * materialAmbientColor.rgb * light.intensities;
+    vec3 ambient = light.ambientCoefficient * material.ambientColor.rgb * light.intensities;
 
     //diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
@@ -55,8 +63,8 @@ vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, ve
     //specular
     float specularCoefficient = 0.0;
     if(diffuseCoefficient > 0.0)
-        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), materialShininess);
-    vec3 specular = specularCoefficient * materialSpecularColor.rgb * light.intensities;
+        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), material.shininess);
+    vec3 specular = specularCoefficient * material.specularColor.rgb * light.intensities;
 
     //linear color (color before gamma correction)
     return ambient + attenuation*(diffuse + specular);
@@ -70,9 +78,22 @@ void main() {
     vec4 surfaceColor=vec4(materialDiffuseColor);
     vec3 surfaceToCamera=normalize(cameraPosition-surfacePos);
 
+    material.specularColor=materialSpecularColor;
+    material.ambientColor=materialAmbientColor;
+    material.diffuseColor=materialDiffuseColor;
+    material.shininess=materialShininess;
+
+    if (useTexture==1.0) {
+        surfaceColor=texture(tex,fragTexCoord);
+        material.specularColor=surfaceColor;
+        material.ambientColor=surfaceColor;
+        material.diffuseColor=surfaceColor;
+        material.shininess=materialShininess+10;
+    }
+
     vec3 linearColor = vec3(0);
     for (int i=0; i < numLights; ++i) {
-        linearColor += ApplyLight(lights[i], surfaceColor.rgb, normal, surfacePos, surfaceToCamera);
+        linearColor += ApplyLight(lights[i], surfaceColor.rgb, normal, surfacePos, surfaceToCamera, material);
     }
 
     //final color (after gamma correction)

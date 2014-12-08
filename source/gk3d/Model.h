@@ -2,6 +2,7 @@
 
 #include "Shader.h"
 #include "Program.h"
+#include "Cube.h"
 
 #include <sstream>
 #include <assimp/Importer.hpp>
@@ -13,116 +14,17 @@
 
 namespace gk3d {
 
-    static GLfloat CUBE_INWARD[] = {
-            //  X     Y     Z  Normal
-            // bottom
-            -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 
-            // top
-            -1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-
-            // front
-            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-
-            // back
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-
-            // left
-            -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-
-            // right
-            1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f
-    };
-
-
-    static GLfloat CUBE[] = {
-            //  X     Y     Z  Normal
-            // bottom
-            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-
-            // top
-            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-
-            // front
-            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-            // back
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-
-            // left
-            -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-
-            // right
-            1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f
-    };
 
     struct Mesh {
         GLuint vbo;
         GLuint vao;
+        GLuint texVbo;
         glm::vec4 ambientColor;
         glm::vec4 diffuseColor;
         glm::vec4 specularColor;
         gk3d::Program *shaders;
+        std::vector<Texture *> textures;
         float shininess;
         GLenum drawType;
         GLint drawStart;
@@ -135,6 +37,7 @@ namespace gk3d {
                 diffuseColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
                 specularColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
                 shininess(1),
+                textures(),
                 shaders(NULL),
                 drawStart(0),
                 drawCount(0),
@@ -143,19 +46,27 @@ namespace gk3d {
     };
 
     struct ModelAsset {
-        gk3d::Program *shaders;
-        std::vector<Texture *> textures;
         std::vector<Mesh *> meshes;
 
         ModelAsset() :
-                shaders(NULL),
-                textures(),
                 meshes() {
         }
 
         void init_cube_inward(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
             Mesh *aMesh = create_mesh(vertexFile, fragmentFile, 36, sizeof(CUBE_INWARD), CUBE_INWARD,materialDiffuseColor);
             this->meshes.push_back(aMesh);
+        }
+
+        /**
+        * Added texture from file @filename to mesh at the index @index(defaut 0).
+        */
+        void add_texture(const char* filename, GLfloat uv[], GLsizeiptr ptrSize, int index =0, GLint minMagFiler = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE) {
+            assert(this->meshes.size()>0);
+            Bitmap bitmap=Bitmap::bitmapFromFile(ResourcePath(filename));
+            Texture *texture=new Texture(bitmap,minMagFiler,wrapMode);
+            Mesh *aMesh=this->meshes[index];
+            aMesh->textures.push_back(texture);
+            load_textures(aMesh,uv,ptrSize);
         }
 
         void init(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
@@ -233,6 +144,20 @@ namespace gk3d {
             return aMesh;
         }
 
+        void load_textures(Mesh *mesh, GLfloat uv[], GLsizeiptr ptrSize) {
+            glGenBuffers(1,&mesh->texVbo);
+
+            glBindVertexArray(mesh->vao);
+            glBindBuffer(GL_ARRAY_BUFFER,mesh->texVbo);
+
+            glBufferData(GL_ARRAY_BUFFER,ptrSize,uv, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(mesh->shaders->attrib("vertTexCoord"));
+            glVertexAttribPointer(mesh->shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_FALSE, 2* sizeof(GLfloat), NULL);
+
+            glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
         void get_vertices(const aiMesh *mesh, std::vector<GLfloat> &vertices) {
 
             int nFaces = mesh->mNumFaces;
@@ -305,10 +230,10 @@ namespace gk3d {
 
             Light spotlight_exit;
             spotlight_exit.intensities = glm::vec3(0, 1, 0);
-            spotlight_exit.position = glm::vec4(10.0, 8.5, 0.0,1);
-            spotlight_exit.attenuation = 0.0f;
+            spotlight_exit.position = glm::vec4(-70.0, 8.5, 0.0,1);
+            spotlight_exit.attenuation = 0.1f;
             spotlight_exit.ambientCoefficient = 0.0f;
-            spotlight_exit.coneAngle=0.5f;
+            spotlight_exit.coneAngle=360.0f;
             spotlight_exit.coneDirection=glm::vec3(-10,0,0);
 
             Light spotlight1;
@@ -389,6 +314,16 @@ namespace gk3d {
                 shaders->setUniform("camera", gCamera.matrix());
 
                 shaders->setUniform("model", this->transform);
+
+                //set the textures
+                if (mesh->textures.size()>0) {
+                    shaders->setUniform("useTexture", 1.0f);
+                }
+                for (int j = 0; j < mesh->textures.size(); ++j) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D,mesh->textures[j]->object());
+                    shaders->setUniform("tex", 0);
+                }
 
                 shaders->setUniform("materialAmbientColor", mesh->ambientColor);
                 shaders->setUniform("materialDiffuseColor", mesh->diffuseColor);

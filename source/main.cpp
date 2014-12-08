@@ -39,15 +39,20 @@
 const glm::vec2 SCREEN_SIZE(800, 600);
 // globals
 //gk3d::ModelAsset gCuboid;
-gk3d::ModelAsset gHall ,gCuboid, gBall, gSpot, gBench;
+gk3d::ModelAsset gHall , gCourt, gCuboid, gBall, gSpot, gBench;
 std::list<gk3d::ModelInstance*> gInstances;
 gk3d::Camera gCamera;
 
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
     char const *fragmentShaderFile = "scene.f.shader";
-    gHall.init_cube_inward(vertexShaderFile, fragmentShaderFile,glm::vec4(0.72156862745f,0.01176470588f,1.0f,1.0f));
-    gCuboid.init(vertexShaderFile, fragmentShaderFile);
+    gHall.init_cube_inward(vertexShaderFile, fragmentShaderFile);
+    gHall.add_texture("wall.jpg", CUBE_UV, sizeof(CUBE_UV));
+
+    gCourt.init(vertexShaderFile, fragmentShaderFile);
+    gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
+
+    gCuboid.init(vertexShaderFile, fragmentShaderFile,glm::vec4(1.0f,1.0f,1.0f,1.0f));
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
     gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
     gBench.init("bench.obj",vertexShaderFile,fragmentShaderFile);
@@ -73,13 +78,14 @@ static void CreateInstances() {
 
     gk3d::ModelInstance *hall=new gk3d::ModelInstance;
     hall->asset=&gHall;
-    hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
+//    hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
+    hall->transform= translate(0.0f,33.0f,0.0f)*scale(72.0f, 40.0f, 72.0f);
     gInstances.push_back(hall);
 
-    gk3d::ModelInstance *hall1=new gk3d::ModelInstance;
-    hall1->asset=&gCuboid;
-    hall1->transform= translate(0.0f, -6.5f, 0.0f)* scale(12.0f, 0.1f, 20.0f);
-    gInstances.push_back(hall1);
+    gk3d::ModelInstance *court =new gk3d::ModelInstance;
+    court->asset=&gCourt;
+    court->transform= translate(0.0f, -6.5f, 0.0f)* scale(18.0f, 0.1f, 36.0f);
+    gInstances.push_back(court);
 
     gk3d::ModelInstance *columnRight =new gk3d::ModelInstance;
     columnRight->asset=&gCuboid;
@@ -133,36 +139,37 @@ static void CreateInstances() {
     ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
     gInstances.push_back(ball4);
 
-    const float sufit = 9.5f;
+    const float sufit = 69.0f;
+    const float Z_spot = 47.0f;
     gk3d::ModelInstance *leftSpot =new gk3d::ModelInstance;
     leftSpot->asset=&gSpot;
-    leftSpot->transform=translate(-20.0f, sufit, 27.0f)*rotate(0, 1, 0, 45.0f);
+    leftSpot->transform=translate(-60.0f, sufit, Z_spot)*rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
     gk3d::ModelInstance *leftSpot1 =new gk3d::ModelInstance;
     leftSpot1->asset=&gSpot;
-    leftSpot1->transform=translate(18.0f, sufit, 27.0f)*rotate(0, 1, 0, 135.0f);
+    leftSpot1->transform=translate(68.0f, sufit, Z_spot)*rotate(0, 1, 0, 135.0f);
     gInstances.push_back(leftSpot1);
 
 
     gk3d::ModelInstance *rightSpot1 =new gk3d::ModelInstance;
     rightSpot1->asset=&gSpot;
-    rightSpot1->transform=translate(18.0f, sufit, -27.0f)* rotate(0, 1, 0, -135.0f);;
+    rightSpot1->transform=translate(68.0f, sufit, -Z_spot)* rotate(0, 1, 0, -135.0f);;
     gInstances.push_back(rightSpot1);
 
     gk3d::ModelInstance *rightSpot2 =new gk3d::ModelInstance;
     rightSpot2->asset=&gSpot;
-    rightSpot2->transform=translate(-20.0f, sufit, -27.0f)*rotate(0, 1, 0, -45.0f);
+    rightSpot2->transform=translate(-60.0f, sufit, -Z_spot)*rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
 
     gk3d::ModelInstance *bench1 =new gk3d::ModelInstance;
     bench1->asset=&gBench;
-    bench1->transform=translate(-30.0f, -5.3f, -16.0f)*scale(6,5,10);
+    bench1->transform=translate(-45.0f, -5.3f, -16.0f)*scale(6,5,10);
     gInstances.push_back(bench1);
 
     gk3d::ModelInstance *bench2 =new gk3d::ModelInstance;
     bench2->asset=&gBench;
-    bench2->transform=translate(-30.0f, -5.3f, 16.0f)*scale(6,5,10);
+    bench2->transform=translate(-45.0f, -5.3f, 16.0f)*scale(6,5,10);
     gInstances.push_back(bench2);
 }
 
@@ -269,6 +276,8 @@ int main(int argc, char *argv[]) {
     CreateInstances();
 
     gCamera.setPosition(glm::vec3(0,13,25));
+    gCamera.setNearAndFarPlanes(0.1f, 200.0f);
+    gCamera.setFieldOfView(90.0f);
     gCamera.offsetOrientation(30.0f, 0.0f);
     gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 

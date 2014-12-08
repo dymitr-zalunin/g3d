@@ -32,6 +32,8 @@ configure_file(resources/spotlight.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/spotl
 configure_file(resources/spotlight.obj ${EXECUTABLE_OUTPUT_PATH}/resources/spotlight.obj COPYONLY)
 configure_file(resources/bench.mtl ${EXECUTABLE_OUTPUT_PATH}/resources/bench.mtl COPYONLY)
 configure_file(resources/bench.obj ${EXECUTABLE_OUTPUT_PATH}/resources/bench.obj COPYONLY)
+configure_file(resources/wall.jpg ${EXECUTABLE_OUTPUT_PATH}/resources/wall.jpg COPYONLY)
+configure_file(resources/court_mat.png ${EXECUTABLE_OUTPUT_PATH}/resources/court_mat.png COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW assimp)
