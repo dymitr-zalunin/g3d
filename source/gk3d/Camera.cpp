@@ -16,6 +16,7 @@ Camera::Camera():
     _position(0.0f,0.0f,0.0f),
     _horizontalAngle(0.0f),
     _verticalAngle(0.0f),
+    _clockwiseAngle(0.0f),
     _fieldOfView(50.0f),
     _nearPlane(0.1f),
     _farPlane(100.0f),
@@ -61,14 +62,16 @@ void Camera::setNearAndFarPlanes(float nearPlane, float farPlane) {
 
 glm::mat4 Camera::orientation() const {
     glm::mat4 orientation;
+    orientation=glm::rotate(orientation, _clockwiseAngle, glm::vec3(0,0,1));
     orientation=glm::rotate(orientation, _verticalAngle, glm::vec3(1,0,0));
     orientation=glm::rotate(orientation, _horizontalAngle, glm::vec3(0,1,0));
     return orientation;
 }
 
-void Camera::offsetOrientation(float upAngle, float rightAngle) {
+void Camera::offsetOrientation(float upAngle, float rightAngle, float clockwiseAngle) {
     _horizontalAngle += rightAngle;
     _verticalAngle += upAngle;
+    _clockwiseAngle += clockwiseAngle;
     normalizeAngles();
 }
 
@@ -127,6 +130,11 @@ void Camera::normalizeAngles() {
     //fmodf can return negative values, but this will make them all positive
     if(_horizontalAngle < 0.0f)
         _horizontalAngle += 360.0f;
+
+    _clockwiseAngle = fmodf(_clockwiseAngle, 360.0f);
+    //fmodf can return negative values, but this will make them all positive
+    if(_clockwiseAngle < 0.0f)
+        _clockwiseAngle += 360.0f;
 
     if(_verticalAngle > MaxVerticalAngle)
         _verticalAngle = MaxVerticalAngle;

@@ -193,6 +193,7 @@ void Update(float secondsElapsed) {
     const float moveSpeed = 5.0; //units per second
     const float horizontalAngleSpeed = 90.0f;
     const float verticalAngleSpeed = 40.0f;
+    const float clockwiseAngleSpeed = 40.0f;
     if (glfwGetKey('S')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
     } else if (glfwGetKey('W')) {
@@ -208,6 +209,12 @@ void Update(float secondsElapsed) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.down());
     } else if (glfwGetKey('X')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.up());
+    }
+
+    if (glfwGetKey('C')) {
+        gCamera.offsetOrientation(0.0f, 0.0f, -secondsElapsed * clockwiseAngleSpeed);
+    } else if (glfwGetKey('V')) {
+        gCamera.offsetOrientation(0.0f, 0.0f, secondsElapsed * clockwiseAngleSpeed);
     }
 
     if (glfwGetKey(GLFW_KEY_RIGHT)) {

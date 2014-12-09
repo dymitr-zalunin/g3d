@@ -69,7 +69,7 @@ namespace gk3d {
         @param upAngle     the angle (in degrees) to offset upwards. Negative values are downwards.
         @param rightAngle  the angle (in degrees) to offset rightwards. Negative values are leftwards.
         */
-        void offsetOrientation(float upAngle, float rightAngle);
+        void offsetOrientation(float upAngle, float rightAngle, float clockwiseAngle=0.0f);
 
         /**
         Orients the camera so that is it directly facing `position`
@@ -119,6 +119,7 @@ namespace gk3d {
         glm::vec3 _position;
         float _horizontalAngle;
         float _verticalAngle;
+        float _clockwiseAngle;
         float _fieldOfView;
         float _nearPlane;
         float _farPlane;
