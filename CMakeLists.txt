@@ -24,7 +24,6 @@ set(SOURCE_FILES
 
 configure_file(resources/fragment-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/fragment-shader.txt COPYONLY)
 configure_file(resources/vertex-shader.txt ${EXECUTABLE_OUTPUT_PATH}/resources/vertex-shader.txt COPYONLY)
-configure_file(resources/hazard.png ${EXECUTABLE_OUTPUT_PATH}/resources/hazard.png COPYONLY)
 configure_file(resources/wooden-crate.jpg ${EXECUTABLE_OUTPUT_PATH}/resources/wooden-crate.jpg COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
