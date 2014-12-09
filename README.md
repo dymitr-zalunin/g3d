@@ -25,3 +25,5 @@ bin/volleyball_court # running the app
 | <kbd>&darr;</kbd>  | look down |
 | <kbd>&larr;</kbd>  | look left  |
 | <kbd>&rarr;</kbd>  | look right  |
+| `v`  | clockwise camera rotation  |
+| `c`  | counterclockwise camera rotation  |
