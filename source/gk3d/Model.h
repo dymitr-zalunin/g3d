@@ -223,6 +223,7 @@ namespace gk3d {
         ModelAsset *asset;
         glm::mat4 transform;
         std::vector<Light> lights;
+        int currColor;
 
         ModelInstance() :
                 asset(NULL),
@@ -295,11 +296,13 @@ namespace gk3d {
             lights.push_back(directional_light1);
             lights.push_back(directional_light2);
             lights.push_back(directional_light3);
+
+            currColor=0;
         }
 
 //        virtual void Render(const Camera &gCamera) const = 0;
 
-        void Render(const Camera &gCamera) const {
+        void Render(const Camera &gCamera)  {
 
             gk3d::ModelAsset *asset = this->asset;
             for (int i = 0; i < asset->meshes.size(); ++i) {
@@ -331,6 +334,8 @@ namespace gk3d {
                 shaders->setUniform("materialShininess", mesh->shininess);
 
                 shaders->setUniform("numLights", (int)lights.size());
+                lights[1].intensities=currColor==0?glm::vec3(1.f,0.f,0.f):glm::vec3(1.f,1.f,1.f);
+                currColor=(currColor+1)%2;
                 for(size_t i = 0; i < lights.size(); ++i) {
                     SetLightUniform(shaders, "position", i, lights[i].position);
                     SetLightUniform(shaders, "intensities", i, lights[i].intensities);
