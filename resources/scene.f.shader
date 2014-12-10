@@ -2,7 +2,8 @@
 
 uniform mat4 model;
 uniform vec3 cameraPosition;
-uniform sampler2D tex;
+uniform int numTextures;
+uniform sampler2D tex[10];
 uniform float materialShininess;
 uniform vec4 materialSpecularColor;
 uniform vec4 materialDiffuseColor;
@@ -27,9 +28,18 @@ struct Material {
     float shininess;
 } material;
 
+uniform struct Fog {
+    vec4 color;
+    float density;
+    float start;
+    float end;
+    int eq;
+} fog;
+
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec3 fragVert;
+in vec4 viewCoord;
 
 out vec4 finalColor;
 
@@ -70,6 +80,19 @@ vec3 ApplyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePos, ve
     return ambient + attenuation*(diffuse + specular);
 }
 
+float fog_factor(Fog fog, float viewCoord) {
+    float result=1.0;
+    if (fog.eq==0) {
+        result=exp(-fog.density*viewCoord);
+    }else if (fog.eq==1) {
+        result=exp(-pow(fog.density*viewCoord,2.0));
+    }else if (fog.eq==2) {
+        result=(fog.end-viewCoord)/(fog.end-fog.start);
+    }
+    result=1.0-clamp(result,0.0,1.0);
+    return result;
+}
+
 void main() {
 
     mat3 normalMatrix = transpose(inverse(mat3(model)));
@@ -84,7 +107,12 @@ void main() {
     material.shininess=materialShininess;
 
     if (useTexture==1.0) {
-        surfaceColor=texture(tex,fragTexCoord);
+        vec4 tcolor=vec4(0,0,0,0);
+        for (int i=0; i<numTextures; i++) {
+            vec4 t=texture(tex[i],fragTexCoord);
+            tcolor=mix(tcolor,t,t.a);
+        }
+        surfaceColor=tcolor;
         material.specularColor=surfaceColor;
         material.ambientColor=surfaceColor;
         material.diffuseColor=surfaceColor;
@@ -100,4 +128,7 @@ void main() {
     vec3 gamma = vec3(1.0/2.2);
     finalColor = vec4(pow(linearColor, gamma), surfaceColor.a);
 
+    float view=abs(viewCoord.z/viewCoord.w);
+    float factor=fog_factor(fog,view);
+    finalColor = mix(finalColor,fog.color,factor);
 }
