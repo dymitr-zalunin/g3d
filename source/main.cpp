@@ -55,7 +55,7 @@ static void LoadAssets() {
     gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
 
     gNet.init(vertexShaderFile, fragmentShaderFile);
-    gNet.add_texture("olympic.png", CUBE_UV, sizeof(CUBE_UV),0,GL_LINEAR, GL_CLAMP_TO_BORDER);
+    gNet.add_texture("olympic.png", LOGO_UV, sizeof(LOGO_UV),0,GL_LINEAR, GL_CLAMP_TO_BORDER);
 
     gCuboid.init(vertexShaderFile, fragmentShaderFile,glm::vec4(1.0f,1.0f,1.0f,1.0f));
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
@@ -196,12 +196,28 @@ void update_delayed_input(float& secondsElapsed) {
     //turn off/on linear filtering
     if (glfwGetKey('L')) {
         if (secondsElapsed>0.3){
-            switch (renderParams.textureFilter){
+            switch (renderParams.magTextureFilter){
                 case GL_LINEAR:
-                    renderParams.textureFilter= GL_NEAREST;
+                    renderParams.magTextureFilter = GL_NEAREST;
                     break;
                 case GL_NEAREST:
-                    renderParams.textureFilter= GL_LINEAR;
+                    renderParams.magTextureFilter = GL_LINEAR;
+                    break;
+                default:
+                    break;
+            }
+            secondsElapsed=0.0;
+        }
+    }
+
+    if (glfwGetKey('T')) {
+        if (secondsElapsed>0.3){
+            switch (renderParams.minTextureFilter){
+                case GL_LINEAR_MIPMAP_LINEAR:
+                    renderParams.minTextureFilter= GL_NEAREST;
+                    break;
+                case GL_NEAREST:
+                    renderParams.minTextureFilter = GL_LINEAR_MIPMAP_LINEAR;
                     break;
                 default:
                     break;
@@ -309,7 +325,8 @@ int main(int argc, char *argv[]) {
     LoadAssets();
     CreateInstances();
 
-    renderParams.textureFilter= GL_NEAREST;
+    renderParams.magTextureFilter = GL_NEAREST;
+    renderParams.minTextureFilter = GL_NEAREST;
 
     gCamera.setPosition(glm::vec3(0,13,25));
     gCamera.setNearAndFarPlanes(0.1f, 200.0f);

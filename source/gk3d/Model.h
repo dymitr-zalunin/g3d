@@ -15,7 +15,8 @@
 namespace gk3d {
 
     struct RenderParams {
-        GLint textureFilter;
+        GLint magTextureFilter;
+        GLint minTextureFilter;
     };
 
     struct Mesh {
@@ -328,7 +329,8 @@ namespace gk3d {
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D,mesh->textures[j]->object());
                     shaders->setUniform("tex", 0);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.textureFilter);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magTextureFilter);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minTextureFilter);
                 }
 
                 shaders->setUniform("materialAmbientColor", mesh->ambientColor);

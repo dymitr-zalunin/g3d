@@ -51,6 +51,7 @@ Texture::Texture(const Bitmap& bitmap, GLint minMagFiler, GLint wrapMode) :
                  TextureFormatForBitmapFormat(bitmap.format()), 
                  GL_UNSIGNED_BYTE, 
                  bitmap.pixelBuffer());
+    glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
