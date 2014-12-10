@@ -39,7 +39,7 @@
 const glm::vec2 SCREEN_SIZE(800, 600);
 // globals
 //gk3d::ModelAsset gCuboid;
-gk3d::ModelAsset gHall , gCourt, gCuboid, gBall, gSpot, gBench;
+gk3d::ModelAsset gHall , gCourt, gNet, gCuboid, gBall, gSpot, gBench;
 std::list<gk3d::ModelInstance*> gInstances;
 gk3d::Camera gCamera;
 
@@ -51,6 +51,9 @@ static void LoadAssets() {
 
     gCourt.init(vertexShaderFile, fragmentShaderFile);
     gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
+
+    gNet.init(vertexShaderFile, fragmentShaderFile);
+    gNet.add_texture("olympic.png", CUBE_UV, sizeof(CUBE_UV),0,GL_LINEAR, GL_CLAMP_TO_BORDER);
 
     gCuboid.init(vertexShaderFile, fragmentShaderFile,glm::vec4(1.0f,1.0f,1.0f,1.0f));
     gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
@@ -115,7 +118,7 @@ static void CreateInstances() {
     gInstances.push_back(cable4);
 
     gk3d::ModelInstance *net=new gk3d::ModelInstance;
-    net->asset=&gCuboid;
+    net->asset=&gNet;
     net->transform= translate(0.0f,4.2f,0.0f)*scale(10.0,2.0,0.1);
     gInstances.push_back(net);
 
