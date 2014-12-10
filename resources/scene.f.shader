@@ -2,7 +2,8 @@
 
 uniform mat4 model;
 uniform vec3 cameraPosition;
-uniform sampler2D tex;
+uniform int numTextures;
+uniform sampler2D tex[10];
 uniform float materialShininess;
 uniform vec4 materialSpecularColor;
 uniform vec4 materialDiffuseColor;
@@ -84,7 +85,12 @@ void main() {
     material.shininess=materialShininess;
 
     if (useTexture==1.0) {
-        surfaceColor=texture(tex,fragTexCoord);
+        vec4 tcolor=vec4(0,0,0,0);
+        for (int i=0; i<numTextures; i++) {
+            vec4 t=texture(tex[i],fragTexCoord);
+            tcolor=mix(tcolor,t,t.a);
+        }
+        surfaceColor=tcolor;
         material.specularColor=surfaceColor;
         material.ambientColor=surfaceColor;
         material.diffuseColor=surfaceColor;

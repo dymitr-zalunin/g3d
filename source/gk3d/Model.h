@@ -29,6 +29,8 @@ namespace gk3d {
         glm::vec4 specularColor;
         gk3d::Program *shaders;
         std::vector<Texture *> textures;
+        Texture* swap;
+        int swap_ind;
         float shininess;
         GLenum drawType;
         GLint drawStart;
@@ -42,6 +44,8 @@ namespace gk3d {
                 specularColor(glm::vec4(1.0f, 1.0f, 1.0f,1.0f)),
                 shininess(1),
                 textures(),
+                swap(NULL),
+                swap_ind(0),
                 shaders(NULL),
                 drawStart(0),
                 drawCount(0),
@@ -71,6 +75,27 @@ namespace gk3d {
             Mesh *aMesh=this->meshes[index];
             aMesh->textures.push_back(texture);
             load_textures(aMesh,uv,ptrSize);
+        }
+        
+        void save_texture_to_swap(int n) {
+            std::vector<Texture *>& tex = this->meshes[0]->textures;
+            assert(tex.size()>n);
+            this->meshes[0]->swap= tex[n];
+            this->meshes[0]->swap_ind=n;
+            tex.erase(tex.begin()+n);
+        }
+
+        void flush_swap() {
+            Mesh *mesh = this->meshes[0];
+            if (mesh->swap!=NULL) {
+                mesh->textures.insert(mesh->textures.begin()+mesh->swap_ind,mesh->swap);
+                mesh->swap=NULL;
+                mesh->swap_ind=-1;
+            }
+        }
+
+        Texture* swap() {
+            return this->meshes[0]->swap;
         }
 
         void init(const char *vertexFile, const char *fragmentFile, glm::vec4 materialDiffuseColor=glm::vec4(1.0f,1.0f,1.0f,1.0f)) {
@@ -322,14 +347,18 @@ namespace gk3d {
 
                 shaders->setUniform("model", this->transform);
 
+                int t_size = (int)mesh->textures.size();
+
                 //set the textures
-                if (mesh->textures.size()>0) {
+                if (t_size>0) {
                     shaders->setUniform("useTexture", 1.0f);
+                    shaders->setUniform("numTextures", t_size);
                 }
-                for (int j = 0; j < mesh->textures.size(); ++j) {
-                    glActiveTexture(GL_TEXTURE0);
+
+                for (int j = 0; j < t_size; ++j) {
+                    glActiveTexture(GL_TEXTURE0+j);
                     glBindTexture(GL_TEXTURE_2D,mesh->textures[j]->object());
-                    shaders->setUniform("tex", 0);
+                    SetUniform(shaders, "tex", NULL, j, j);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magTextureFilter);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minTextureFilter);
                     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, params.bias);
@@ -344,20 +373,13 @@ namespace gk3d {
                 lights[1].intensities=currColor==0?glm::vec3(1.f,0.f,0.f):glm::vec3(1.f,1.f,1.f);
                 currColor=(currColor+1)%2;
                 for(size_t i = 0; i < lights.size(); ++i) {
-                    SetLightUniform(shaders, "position", i, lights[i].position);
-                    SetLightUniform(shaders, "intensities", i, lights[i].intensities);
-                    SetLightUniform(shaders, "attenuation", i, lights[i].attenuation);
-                    SetLightUniform(shaders, "ambientCoefficient", i, lights[i].ambientCoefficient);
-                    SetLightUniform(shaders, "coneAngle", i, lights[i].coneAngle);
-                    SetLightUniform(shaders, "coneDirection", i, lights[i].coneDirection);
+                    SetUniform(shaders, "lights", "position", i, lights[i].position);
+                    SetUniform(shaders, "lights", "intensities", i, lights[i].intensities);
+                    SetUniform(shaders, "lights", "attenuation", i, lights[i].attenuation);
+                    SetUniform(shaders, "lights", "ambientCoefficient", i, lights[i].ambientCoefficient);
+                    SetUniform(shaders, "lights", "coneAngle", i, lights[i].coneAngle);
+                    SetUniform(shaders, "lights", "coneDirection", i, lights[i].coneDirection);
                 }
-
-//                shaders->setUniform("light.position", glm::vec4(light.position, 0));
-//                shaders->setUniform("light.intensities", light.intensities);
-//                shaders->setUniform("light.attenuation", light.attenuation);
-//                shaders->setUniform("light.ambientCoefficient", light.ambientCoefficient);
-//                shaders->setUniform("light.coneAngle", 20.0f);
-//                shaders->setUniform("light.coneDirection", glm::vec3(0.0, -1.0, 0.0));
 
                 //bind VAO and draw
                 glBindVertexArray(mesh->vao);
@@ -370,12 +392,15 @@ namespace gk3d {
         }
 
         template <typename T>
-        void SetLightUniform(gk3d::Program* shaders, const char* propertyName, size_t lightIndex, T& value) const{
+        void SetUniform(gk3d::Program *shaders, const char *uniformName, const char *propertyName, size_t lightIndex, T &value) const{
             std::ostringstream ss;
-            ss << "lights[" << lightIndex << "]." << propertyName;
-            std::string uniformName = ss.str();
+            ss << uniformName << "[" << lightIndex << "]";
+            if (propertyName != NULL) {
+                ss << "." << propertyName;
+            }
+            std::string uniformName1 = ss.str();
 
-            shaders->setUniform(uniformName.c_str(), value);
+            shaders->setUniform(uniformName1.c_str(), value);
         }
 
     };

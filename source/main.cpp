@@ -52,7 +52,9 @@ static void LoadAssets() {
     gHall.add_texture("stone.png", CUBE_UV, sizeof(CUBE_UV));
 
     gCourt.init(vertexShaderFile, fragmentShaderFile);
-    gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
+    gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV));
+    gCourt.add_texture("parquet.jpg", COURT_UV, sizeof(COURT_UV),0, GL_LINEAR, GL_REPEAT);
+    gCourt.add_texture("olympic.png", CUBE_UV, sizeof(CUBE_UV));
 
     gNet.init(vertexShaderFile, fragmentShaderFile);
     gNet.add_texture("olympic.png", LOGO_UV, sizeof(LOGO_UV),0,GL_LINEAR, GL_CLAMP_TO_BORDER);
@@ -246,6 +248,17 @@ void update_delayed_input(float& secondsElapsed) {
     }
     if (renderParams.bias<0.0) {
         renderParams.bias=0;
+    }
+
+    if (glfwGetKey('M')) {
+        if (secondsElapsed>0.3) {
+            if (!gCourt.swap()) {
+                gCourt.save_texture_to_swap(1);
+            }else {
+                gCourt.flush_swap();
+            }
+            secondsElapsed=0.0;
+        }
     }
 }
 
