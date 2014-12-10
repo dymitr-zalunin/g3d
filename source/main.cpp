@@ -29,219 +29,237 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
-
-// tdogl classes
-#include "tdogl/Program.h"
-#include "tdogl/Texture.h"
-#include "tdogl/Camera.h"
-
+#include <list>
+// gk3d classes
+#include "gk3d/Program.h"
+#include "gk3d/Texture.h"
+#include "gk3d/Camera.h"
+#include "gk3d/Model.h"
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
-
 // globals
-tdogl::Texture* gTexture = NULL;
-tdogl::Program* gProgram = NULL;
-tdogl::Camera gCamera;
-GLuint gVAO = 0;
-GLuint gVBO = 0;
-GLfloat gDegreesRotated = 0.0f;
-double gScrollY = 0.0;
+//gk3d::ModelAsset gCuboid;
+gk3d::ModelAsset gHall , gCourt, gCuboid, gBall, gSpot, gBench;
+std::list<gk3d::ModelInstance*> gInstances;
+gk3d::Camera gCamera;
 
+static void LoadAssets() {
+    char const *vertexShaderFile = "scene.v.shader";
+    char const *fragmentShaderFile = "scene.f.shader";
+    gHall.init_cube_inward(vertexShaderFile, fragmentShaderFile);
+    gHall.add_texture("wall.jpg", CUBE_UV, sizeof(CUBE_UV));
 
-// returns the full path to the file `fileName` in the resources directory of the app bundle
-static std::string ResourcePath(std::string fileName) {
-    return GetProcessPath() + "/resources/" + fileName;
+    gCourt.init(vertexShaderFile, fragmentShaderFile);
+    gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
+
+    gCuboid.init(vertexShaderFile, fragmentShaderFile,glm::vec4(1.0f,1.0f,1.0f,1.0f));
+    gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
+    gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
+    gBench.init("bench.obj",vertexShaderFile,fragmentShaderFile);
+}
+
+// convenience function that returns a translation matrix
+glm::mat4 translate(GLfloat x, GLfloat y, GLfloat z) {
+    return glm::translate(glm::mat4(), glm::vec3(x,y,z));
 }
 
 
-// loads the vertex shader and fragment shader, and links them to make the global gProgram
-static void LoadShaders() {
-    std::vector<tdogl::Shader> shaders;
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
-    gProgram = new tdogl::Program(shaders);
+// convenience function that returns a scaling matrix
+glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
+    return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
-
-// loads a triangle into the VAO global
-static void LoadTriangle() {
-    // make and bind the VAO
-    glGenVertexArrays(1, &gVAO);
-    glBindVertexArray(gVAO);
-    
-    // make and bind the VBO
-    glGenBuffers(1, &gVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    
-    // Put the three triangle vertices (XYZ) and texture coordinates (UV) into the VBO
-    GLfloat vertexData[] = {
-//  X     Y     Z       U     V
-            // bottom
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-
-            // top
-            -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-
-            // front
-            -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-
-            // back
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
-
-            // left
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-            -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-            -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-
-            // right
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f,   0.0f, 1.0f
-
-    };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-
-    // connect the xyz to the "vert" attribute of the vertex shader
-    glEnableVertexAttribArray(gProgram->attrib("vert"));
-    glVertexAttribPointer(gProgram->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
-        
-    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
-    glEnableVertexAttribArray(gProgram->attrib("vertTexCoord"));
-    glVertexAttribPointer(gProgram->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-    // unbind the VAO
-    glBindVertexArray(0);
+// convenience function that returns a rotation matrix
+glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
+    return glm::rotate(glm::mat4(), angle,glm::vec3(x,y,z));
 }
 
+static void CreateInstances() {
 
-// loads the file "hazard.png" into gTexture
-static void LoadTexture() {
-    tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath("wooden-crate.jpg"));
-    bmp.flipVertically();
-    gTexture = new tdogl::Texture(bmp);
+    gk3d::ModelInstance *hall=new gk3d::ModelInstance;
+    hall->asset=&gHall;
+//    hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
+    hall->transform= translate(0.0f,33.0f,0.0f)*scale(72.0f, 40.0f, 72.0f);
+    gInstances.push_back(hall);
+
+    gk3d::ModelInstance *court =new gk3d::ModelInstance;
+    court->asset=&gCourt;
+    court->transform= translate(0.0f, -6.5f, 0.0f)* scale(18.0f, 0.1f, 36.0f);
+    gInstances.push_back(court);
+
+    gk3d::ModelInstance *columnRight =new gk3d::ModelInstance;
+    columnRight->asset=&gCuboid;
+    columnRight->transform= translate(12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
+    gInstances.push_back(columnRight);
+
+    gk3d::ModelInstance *columnLeft=new gk3d::ModelInstance;
+    columnLeft->asset=&gCuboid;
+    columnLeft->transform= translate(-12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
+    gInstances.push_back(columnLeft);
+
+    gk3d::ModelInstance *cable1=new gk3d::ModelInstance;
+    cable1->asset=&gCuboid;
+    cable1->transform= translate(-10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable1);
+    gk3d::ModelInstance *cable2=new gk3d::ModelInstance;
+    cable2->asset=&gCuboid;
+    cable2->transform= translate(-10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable2);
+    gk3d::ModelInstance *cable3=new gk3d::ModelInstance;
+    cable3->asset=&gCuboid;
+    cable3->transform= translate(10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable3);
+    gk3d::ModelInstance *cable4=new gk3d::ModelInstance;
+    cable4->asset=&gCuboid;
+    cable4->transform= translate(10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gInstances.push_back(cable4);
+
+    gk3d::ModelInstance *net=new gk3d::ModelInstance;
+    net->asset=&gCuboid;
+    net->transform= translate(0.0f,4.2f,0.0f)*scale(10.0,2.0,0.1);
+    gInstances.push_back(net);
+
+    gk3d::ModelInstance *ball1=new gk3d::ModelInstance;
+    ball1->asset=&gBall;
+    ball1->transform=translate(-7.0f, -6.5f, 10.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball1);
+
+    gk3d::ModelInstance *ball2=new gk3d::ModelInstance;
+    ball2->asset=&gBall;
+    ball2->transform=translate(-5.0f, -6.5f, -13.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball2);
+
+    gk3d::ModelInstance *ball3=new gk3d::ModelInstance;
+    ball3->asset=&gBall;
+    ball3->transform=translate(5.0f, -6.5f, -10.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball3);
+
+    gk3d::ModelInstance *ball4=new gk3d::ModelInstance;
+    ball4->asset=&gBall;
+    ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
+    gInstances.push_back(ball4);
+
+    const float sufit = 69.0f;
+    const float Z_spot = 47.0f;
+    gk3d::ModelInstance *leftSpot =new gk3d::ModelInstance;
+    leftSpot->asset=&gSpot;
+    leftSpot->transform=translate(-60.0f, sufit, Z_spot)*rotate(0, 1, 0, 45.0f);
+    gInstances.push_back(leftSpot);
+
+    gk3d::ModelInstance *leftSpot1 =new gk3d::ModelInstance;
+    leftSpot1->asset=&gSpot;
+    leftSpot1->transform=translate(68.0f, sufit, Z_spot)*rotate(0, 1, 0, 135.0f);
+    gInstances.push_back(leftSpot1);
+
+
+    gk3d::ModelInstance *rightSpot1 =new gk3d::ModelInstance;
+    rightSpot1->asset=&gSpot;
+    rightSpot1->transform=translate(68.0f, sufit, -Z_spot)* rotate(0, 1, 0, -135.0f);;
+    gInstances.push_back(rightSpot1);
+
+    gk3d::ModelInstance *rightSpot2 =new gk3d::ModelInstance;
+    rightSpot2->asset=&gSpot;
+    rightSpot2->transform=translate(-60.0f, sufit, -Z_spot)*rotate(0, 1, 0, -45.0f);
+    gInstances.push_back(rightSpot2);
+
+    gk3d::ModelInstance *bench1 =new gk3d::ModelInstance;
+    bench1->asset=&gBench;
+    bench1->transform=translate(-45.0f, -5.3f, -16.0f)*scale(6,5,10);
+    gInstances.push_back(bench1);
+
+    gk3d::ModelInstance *bench2 =new gk3d::ModelInstance;
+    bench2->asset=&gBench;
+    bench2->transform=translate(-45.0f, -5.3f, 16.0f)*scale(6,5,10);
+    gInstances.push_back(bench2);
 }
-
 
 // draws a single frame
 static void Render() {
-    // clear everything
-    glClearColor(0, 0, 0, 1); // black
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // bind the program (the shaders)
-    gProgram->use();
 
-    //set the "camera" uniform
-    gProgram->setUniform("camera", gCamera.matrix());
+    glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//    gProgram->setUniform("model", glm::rotate(glm::mat4(), gDegreesRotated, glm::vec3(0,1,0)));
+    std::list<gk3d::ModelInstance*>::iterator it;
+    for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
+        (*it)->Render(gCamera);
+    }
 
-    // bind the texture and set the "tex" uniform in the fragment shader
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gTexture->object());
-    gProgram->setUniform("tex", 0); //set to 0 because the texture is bound to GL_TEXTURE0
-
-    // bind the VAO (the triangle)
-    glBindVertexArray(gVAO);
-    
-    // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 6*2*3);
-    
-    // unbind the VAO, the program and the texture
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    gProgram->stopUsing();
-    
-    // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers();
 }
 
 void Update(float secondsElapsed) {
-//    const GLfloat degreesPerSecond = 30.0f;
-//    gDegreesRotated += secondsElapsed * degreesPerSecond;
-//    while (gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
 
     //move position of camera based on WASD keys, and XZ keys for up and down
-    const float moveSpeed = 2.0; //units per second
+    const float moveSpeed = 5.0; //units per second
     const float horizontalAngleSpeed = 90.0f;
     const float verticalAngleSpeed = 40.0f;
-    if(glfwGetKey('S')){
+    const float clockwiseAngleSpeed = 40.0f;
+    if (glfwGetKey('S')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
-    } else if(glfwGetKey('W')){
+    } else if (glfwGetKey('W')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.forward());
     }
-    if(glfwGetKey('A')){
+    if (glfwGetKey('A')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.right());
-    } else if(glfwGetKey('D')){
+    } else if (glfwGetKey('D')) {
         gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
     }
-    if(glfwGetKey('Z')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
-    } else if(glfwGetKey('X')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
-    } else if (glfwGetKey('E')) {
+
+    if (glfwGetKey('Z')) {
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.down());
+    } else if (glfwGetKey('X')) {
+        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.up());
+    }
+
+    if (glfwGetKey('C')) {
+        gCamera.offsetOrientation(0.0f, 0.0f, -secondsElapsed * clockwiseAngleSpeed);
+    } else if (glfwGetKey('V')) {
+        gCamera.offsetOrientation(0.0f, 0.0f, secondsElapsed * clockwiseAngleSpeed);
+    }
+
+    if (glfwGetKey(GLFW_KEY_RIGHT)) {
         gCamera.offsetOrientation(0.0f, secondsElapsed * horizontalAngleSpeed);
-    } else if (glfwGetKey('Q')) {
+    } else if (glfwGetKey(GLFW_KEY_LEFT)) {
         gCamera.offsetOrientation(0.0f, -secondsElapsed * horizontalAngleSpeed);
-    } else if (glfwGetKey('R')) {
+    } else if (glfwGetKey(GLFW_KEY_DOWN)) {
         gCamera.offsetOrientation(secondsElapsed * verticalAngleSpeed, 0.0f);
-    } else if (glfwGetKey('T')) {
+    } else if (glfwGetKey(GLFW_KEY_UP)) {
         gCamera.offsetOrientation(-secondsElapsed * verticalAngleSpeed, 0.0f);
 
     }
 
     //increase or decrease field of view based on mouse wheel
     const float zoomSensitivity = -2.0;
-    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float)glfwGetMouseWheel();
-    if(fieldOfView < 5.0f) fieldOfView = 5.0f;
-    if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float) glfwGetMouseWheel();
+    if (fieldOfView < 5.0f) fieldOfView = 5.0f;
+    if (fieldOfView > 130.0f) fieldOfView = 130.0f;
     gCamera.setFieldOfView(fieldOfView);
     glfwSetMouseWheel(0);
+}
+
+void GLFWCALL reshape( int width, int height ) {
+    glViewport(0, 0, width, height);
+    gCamera.setViewportAspectRatio((float)width/height);
 }
 
 // the program starts here
 int main(int argc, char *argv[]) {
     // initialise GLFW
-    if(!glfwInit())
+    if (!glfwInit())
         throw std::runtime_error("glfwInit failed");
-    
+
     // open a window with GLFW
     glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 2);
-    glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-    if(!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
+    if (!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
         throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
-    
+
+    glfwSetWindowSizeCallback( reshape );
+
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
-    if(glewInit() != GLEW_OK)
+    if (glewInit() != GLEW_OK)
         throw std::runtime_error("glewInit failed");
 
     // print out some info about the graphics drivers
@@ -251,7 +269,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 
     // make sure OpenGL version 3.2 API is available
-    if(!GLEW_VERSION_3_2)
+    if (!GLEW_VERSION_3_2)
         throw std::runtime_error("OpenGL 3.2 API is not available.");
 
     // OpenGL settings
@@ -260,27 +278,30 @@ int main(int argc, char *argv[]) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // load vertex and fragment shaders into opengl
-    LoadShaders();
-
-    // load the texture
-    LoadTexture();
-
     // create buffer and fill it with the points of the triangle
-    LoadTriangle();
+    LoadAssets();
+    CreateInstances();
 
-    gCamera.setPosition(glm::vec3(0,0,4));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x/SCREEN_SIZE.y);
+    gCamera.setPosition(glm::vec3(0,13,25));
+    gCamera.setNearAndFarPlanes(0.1f, 200.0f);
+    gCamera.setFieldOfView(90.0f);
+    gCamera.offsetOrientation(30.0f, 0.0f);
+    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 
     // run while the window is open
-    double lastTime= glfwGetTime();
-    while(glfwGetWindowParam(GLFW_OPENED)){
-        glfwPollEvents();
-        double thisTime= glfwGetTime();
-        Update((float)(thisTime-lastTime));
-        lastTime=thisTime;
+    double lastTime = glfwGetTime();
+    while (glfwGetWindowParam(GLFW_OPENED)) {
+        // update the scene based on the time elapsed since last update
+        double thisTime = glfwGetTime();
+        Update(thisTime - lastTime);
+        lastTime = thisTime;
+
         // draw one frame
         Render();
+
+        //exit program if escape key is pressed
+        if(glfwGetKey(GLFW_KEY_ESC))
+            glfwCloseWindow();
     }
 
     // clean up and exit
