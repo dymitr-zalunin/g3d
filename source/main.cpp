@@ -43,6 +43,7 @@ gk3d::ModelAsset gHall , gCourt, gNet, gCuboid, gBall, gSpot, gBench;
 std::list<gk3d::ModelInstance*> gInstances;
 gk3d::Camera gCamera;
 gk3d::RenderParams renderParams;
+gk3d::Fog *gFog;
 float secondsElapsedAfterLastPress =0.0f;
 
 static void LoadAssets() {
@@ -260,6 +261,31 @@ void update_delayed_input(float& secondsElapsed) {
             secondsElapsed=0.0;
         }
     }
+    if (glfwGetKey('F')) {
+        if (secondsElapsed>0.3) {
+            gFog->eq=(gFog->eq+1)%4;
+            secondsElapsed=0.0;
+        }
+    }
+    //fog density
+    if (glfwGetKey('H')) {
+        if (secondsElapsed>0.3) {
+            gFog->density=(gFog->density+0.01);
+            if (gFog->density>0.1) {
+                gFog->density=0.1;
+            }
+            secondsElapsed=0.0;
+        }
+    }
+    if (glfwGetKey('G')) {
+        if (secondsElapsed>0.3) {
+            gFog->density=(gFog->density-0.01);
+            if (gFog->density<0.0) {
+                gFog->density=0.0;
+            }
+            secondsElapsed=0.0;
+        }
+    }
 }
 
 void Update(float secondsElapsed) {
@@ -360,9 +386,16 @@ int main(int argc, char *argv[]) {
     LoadAssets();
     CreateInstances();
 
+    gFog =new gk3d::Fog;
+    gFog->density=0.01;
+    gFog->color=glm::vec4(1,1,1,1);
+    gFog->start=10;
+    gFog->end=80;
+    gFog->eq=3;
     renderParams.magTextureFilter = GL_NEAREST;
     renderParams.minTextureFilter = GL_NEAREST;
     renderParams.bias=0.0f;
+    renderParams.fog= gFog;
     gCamera.setPosition(glm::vec3(0,13,25));
     gCamera.setNearAndFarPlanes(0.1f, 200.0f);
     gCamera.setFieldOfView(90.0f);

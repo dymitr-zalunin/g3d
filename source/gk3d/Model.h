@@ -14,10 +14,24 @@
 
 namespace gk3d {
 
+    struct Fog{
+        float density;
+        /**
+        * 0 - exp
+        * 1 - exp2
+        * 2 - linear
+        */
+        int eq;
+        glm::vec4 color;
+        float start;
+        float end;
+    };
+
     struct RenderParams {
         GLint magTextureFilter;
         GLint minTextureFilter;
         GLfloat bias;
+        Fog* fog;
     };
 
     struct Mesh {
@@ -347,17 +361,17 @@ namespace gk3d {
 
                 shaders->setUniform("model", this->transform);
 
-                int t_size = (int)mesh->textures.size();
+                int t_size = (int) mesh->textures.size();
 
                 //set the textures
-                if (t_size>0) {
+                if (t_size > 0) {
                     shaders->setUniform("useTexture", 1.0f);
                     shaders->setUniform("numTextures", t_size);
                 }
 
                 for (int j = 0; j < t_size; ++j) {
-                    glActiveTexture(GL_TEXTURE0+j);
-                    glBindTexture(GL_TEXTURE_2D,mesh->textures[j]->object());
+                    glActiveTexture(GL_TEXTURE0 + j);
+                    glBindTexture(GL_TEXTURE_2D, mesh->textures[j]->object());
                     SetUniform(shaders, "tex", NULL, j, j);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.magTextureFilter);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.minTextureFilter);
@@ -369,16 +383,24 @@ namespace gk3d {
                 shaders->setUniform("materialSpecularColor", mesh->specularColor);
                 shaders->setUniform("materialShininess", mesh->shininess);
 
-                shaders->setUniform("numLights", (int)lights.size());
-                lights[1].intensities=currColor==0?glm::vec3(1.f,0.f,0.f):glm::vec3(1.f,1.f,1.f);
-                currColor=(currColor+1)%2;
-                for(size_t i = 0; i < lights.size(); ++i) {
+                shaders->setUniform("numLights", (int) lights.size());
+                lights[1].intensities = currColor == 0 ? glm::vec3(1.f, 0.f, 0.f) : glm::vec3(1.f, 1.f, 1.f);
+                currColor = (currColor + 1) % 2;
+                for (size_t i = 0; i < lights.size(); ++i) {
                     SetUniform(shaders, "lights", "position", i, lights[i].position);
                     SetUniform(shaders, "lights", "intensities", i, lights[i].intensities);
                     SetUniform(shaders, "lights", "attenuation", i, lights[i].attenuation);
                     SetUniform(shaders, "lights", "ambientCoefficient", i, lights[i].ambientCoefficient);
                     SetUniform(shaders, "lights", "coneAngle", i, lights[i].coneAngle);
                     SetUniform(shaders, "lights", "coneDirection", i, lights[i].coneDirection);
+                }
+
+                if (params.fog != NULL) {
+                    shaders->setUniform("fog.color", params.fog->color);
+                    shaders->setUniform("fog.density", params.fog->density);
+                    shaders->setUniform("fog.eq", params.fog->eq);
+                    shaders->setUniform("fog.start", params.fog->start);
+                    shaders->setUniform("fog.end", params.fog->end);
                 }
 
                 //bind VAO and draw
