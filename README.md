@@ -8,7 +8,6 @@
 ```
 git clone https://github.com/dymitr-zalunin/g3d.git
 cd g3d
-git checkout dev
 mkdir build && cd build
 cmake .. && make
 bin/volleyball_court # running the app
