@@ -35,6 +35,7 @@ configure_file(resources/bench.obj ${EXECUTABLE_OUTPUT_PATH}/resources/bench.obj
 configure_file(resources/wall.jpg ${EXECUTABLE_OUTPUT_PATH}/resources/wall.jpg COPYONLY)
 configure_file(resources/court_mat.png ${EXECUTABLE_OUTPUT_PATH}/resources/court_mat.png COPYONLY)
 configure_file(resources/olympic.png ${EXECUTABLE_OUTPUT_PATH}/resources/olympic.png COPYONLY)
+configure_file(resources/stone.png ${EXECUTABLE_OUTPUT_PATH}/resources/stone.png COPYONLY)
 add_executable(volleyball_court ${SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(volleyball_court GL glfw GLEW assimp)

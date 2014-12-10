@@ -14,7 +14,9 @@
 
 namespace gk3d {
 
-
+    struct RenderParams {
+        GLint textureFilter;
+    };
 
     struct Mesh {
         GLuint vbo;
@@ -302,7 +304,7 @@ namespace gk3d {
 
 //        virtual void Render(const Camera &gCamera) const = 0;
 
-        void Render(const Camera &gCamera)  {
+        void Render(const Camera &gCamera, const RenderParams& params)  {
 
             gk3d::ModelAsset *asset = this->asset;
             for (int i = 0; i < asset->meshes.size(); ++i) {
@@ -326,6 +328,7 @@ namespace gk3d {
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D,mesh->textures[j]->object());
                     shaders->setUniform("tex", 0);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, params.textureFilter);
                 }
 
                 shaders->setUniform("materialAmbientColor", mesh->ambientColor);

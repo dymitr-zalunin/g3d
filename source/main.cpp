@@ -42,12 +42,14 @@ const glm::vec2 SCREEN_SIZE(800, 600);
 gk3d::ModelAsset gHall , gCourt, gNet, gCuboid, gBall, gSpot, gBench;
 std::list<gk3d::ModelInstance*> gInstances;
 gk3d::Camera gCamera;
+gk3d::RenderParams renderParams;
+float secondsElapsedAfterLastPress =0.0f;
 
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
     char const *fragmentShaderFile = "scene.f.shader";
     gHall.init_cube_inward(vertexShaderFile, fragmentShaderFile);
-    gHall.add_texture("wall.jpg", CUBE_UV, sizeof(CUBE_UV));
+    gHall.add_texture("stone.png", CUBE_UV, sizeof(CUBE_UV));
 
     gCourt.init(vertexShaderFile, fragmentShaderFile);
     gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV), 0);
@@ -184,13 +186,35 @@ static void Render() {
 
     std::list<gk3d::ModelInstance*>::iterator it;
     for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
-        (*it)->Render(gCamera);
+        (*it)->Render(gCamera,renderParams);
     }
 
     glfwSwapBuffers();
 }
 
+void update_delayed_input(float& secondsElapsed) {
+    //turn off/on linear filtering
+    if (glfwGetKey('L')) {
+        if (secondsElapsed>0.3){
+            switch (renderParams.textureFilter){
+                case GL_LINEAR:
+                    renderParams.textureFilter= GL_NEAREST;
+                    break;
+                case GL_NEAREST:
+                    renderParams.textureFilter= GL_LINEAR;
+                    break;
+                default:
+                    break;
+            }
+            secondsElapsed=0.0;
+        }
+    }
+}
+
 void Update(float secondsElapsed) {
+
+    secondsElapsedAfterLastPress +=secondsElapsed;
+    update_delayed_input(secondsElapsedAfterLastPress);
 
     //move position of camera based on WASD keys, and XZ keys for up and down
     const float moveSpeed = 5.0; //units per second
@@ -284,6 +308,8 @@ int main(int argc, char *argv[]) {
     // create buffer and fill it with the points of the triangle
     LoadAssets();
     CreateInstances();
+
+    renderParams.textureFilter= GL_NEAREST;
 
     gCamera.setPosition(glm::vec3(0,13,25));
     gCamera.setNearAndFarPlanes(0.1f, 200.0f);
