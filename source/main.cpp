@@ -225,6 +225,28 @@ void update_delayed_input(float& secondsElapsed) {
             secondsElapsed=0.0;
         }
     }
+
+    GLfloat bias=0.0;
+    if (glfwGetKey('P')) {
+        if (secondsElapsed>0.3){
+            bias=1.0f;
+            secondsElapsed=0.0;
+        }
+    }
+    if (glfwGetKey('O')) {
+        if (secondsElapsed>0.3){
+            bias=-1.0f;
+            secondsElapsed=0.0;
+        }
+    }
+    renderParams.bias+=bias;
+    float max_bias = 3.0f;
+    if (renderParams.bias>max_bias) {
+        renderParams.bias=max_bias;
+    }
+    if (renderParams.bias<0.0) {
+        renderParams.bias=0;
+    }
 }
 
 void Update(float secondsElapsed) {
@@ -327,7 +349,7 @@ int main(int argc, char *argv[]) {
 
     renderParams.magTextureFilter = GL_NEAREST;
     renderParams.minTextureFilter = GL_NEAREST;
-
+    renderParams.bias=0.0f;
     gCamera.setPosition(glm::vec3(0,13,25));
     gCamera.setNearAndFarPlanes(0.1f, 200.0f);
     gCamera.setFieldOfView(90.0f);
