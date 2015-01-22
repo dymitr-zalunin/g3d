@@ -358,6 +358,7 @@ namespace gk3d {
 
                 //set the shader uniforms
                 shaders->setUniform("camera", gCamera.matrix());
+//                shaders->setUniform("viewDirection", gCamera.forward());
 
                 shaders->setUniform("model", this->transform);
 

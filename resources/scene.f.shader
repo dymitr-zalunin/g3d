@@ -126,9 +126,10 @@ void main() {
 
     //final color (after gamma correction)
     vec3 gamma = vec3(1.0/2.2);
-    finalColor = vec4(pow(linearColor, gamma), surfaceColor.a);
+    vec4 tmpColor = vec4(pow(linearColor, gamma), surfaceColor.a);
 
     float view=abs(viewCoord.z/viewCoord.w);
     float factor=fog_factor(fog,view);
-    finalColor = mix(finalColor,fog.color,factor);
+    finalColor = mix(tmpColor,fog.color,factor);
+
 }
