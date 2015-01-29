@@ -35,16 +35,17 @@
 #include "gk3d/Texture.h"
 #include "gk3d/Camera.h"
 #include "gk3d/Model.h"
+
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
 // globals
 //gk3d::ModelAsset gCuboid;
-gk3d::ModelAsset gHall , gCourt, gNet, gCuboid, gBall, gSpot, gBench;
-std::list<gk3d::ModelInstance*> gInstances;
+gk3d::ModelAsset gHall, gCourt, gNet, gCuboid, gBall, gSpot, gBench;
+std::list<gk3d::ModelInstance *> gInstances;
 gk3d::Camera gCamera;
 gk3d::RenderParams renderParams;
 gk3d::Fog *gFog;
-float secondsElapsedAfterLastPress =0.0f;
+float secondsElapsedAfterLastPress = 0.0f;
 
 static void LoadAssets() {
     char const *vertexShaderFile = "scene.v.shader";
@@ -54,130 +55,130 @@ static void LoadAssets() {
 
     gCourt.init(vertexShaderFile, fragmentShaderFile);
     gCourt.add_texture("court_mat.png", CUBE_UV, sizeof(CUBE_UV));
-    gCourt.add_texture("parquet.jpg", COURT_UV, sizeof(COURT_UV),0, GL_LINEAR, GL_REPEAT);
+    gCourt.add_texture("parquet.jpg", COURT_UV, sizeof(COURT_UV), 0, GL_LINEAR, GL_REPEAT);
     gCourt.add_texture("olympic.png", CUBE_UV, sizeof(CUBE_UV));
 
     gNet.init(vertexShaderFile, fragmentShaderFile);
-    gNet.add_texture("olympic.png", LOGO_UV, sizeof(LOGO_UV),0,GL_LINEAR, GL_CLAMP_TO_BORDER);
+    gNet.add_texture("olympic.png", LOGO_UV, sizeof(LOGO_UV), 0, GL_LINEAR, GL_CLAMP_TO_BORDER);
 
-    gCuboid.init(vertexShaderFile, fragmentShaderFile,glm::vec4(1.0f,1.0f,1.0f,1.0f));
-    gSpot.init("spotlight.obj",vertexShaderFile,fragmentShaderFile);
-    gBall.init("Volleyball.obj",vertexShaderFile,fragmentShaderFile);
-    gBench.init("bench.obj",vertexShaderFile,fragmentShaderFile);
+    gCuboid.init(vertexShaderFile, fragmentShaderFile, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    gSpot.init("spotlight.obj", vertexShaderFile, fragmentShaderFile);
+    gBall.init("Volleyball.obj", vertexShaderFile, fragmentShaderFile);
+    gBench.init("bench.obj", vertexShaderFile, fragmentShaderFile);
 }
 
 // convenience function that returns a translation matrix
 glm::mat4 translate(GLfloat x, GLfloat y, GLfloat z) {
-    return glm::translate(glm::mat4(), glm::vec3(x,y,z));
+    return glm::translate(glm::mat4(), glm::vec3(x, y, z));
 }
 
 
 // convenience function that returns a scaling matrix
 glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
-    return glm::scale(glm::mat4(), glm::vec3(x,y,z));
+    return glm::scale(glm::mat4(), glm::vec3(x, y, z));
 }
 
 // convenience function that returns a rotation matrix
 glm::mat4 rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
-    return glm::rotate(glm::mat4(), angle,glm::vec3(x,y,z));
+    return glm::rotate(glm::mat4(), angle, glm::vec3(x, y, z));
 }
 
 static void CreateInstances() {
 
-    gk3d::ModelInstance *hall=new gk3d::ModelInstance;
-    hall->asset=&gHall;
+    gk3d::ModelInstance *hall = new gk3d::ModelInstance;
+    hall->asset = &gHall;
 //    hall->transform= translate(-10.0f,3.5f,0.0f)*scale(30.0f, 10.0f, 30.0f);
-    hall->transform= translate(0.0f,33.0f,0.0f)*scale(72.0f, 40.0f, 72.0f);
+    hall->transform = translate(0.0f, 33.0f, 0.0f) * scale(72.0f, 40.0f, 72.0f);
     gInstances.push_back(hall);
 
-    gk3d::ModelInstance *court =new gk3d::ModelInstance;
-    court->asset=&gCourt;
-    court->transform= translate(0.0f, -6.5f, 0.0f)* scale(18.0f, 0.1f, 36.0f);
+    gk3d::ModelInstance *court = new gk3d::ModelInstance;
+    court->asset = &gCourt;
+    court->transform = translate(0.0f, -6.5f, 0.0f) * scale(18.0f, 0.1f, 36.0f);
     gInstances.push_back(court);
 
-    gk3d::ModelInstance *columnRight =new gk3d::ModelInstance;
-    columnRight->asset=&gCuboid;
-    columnRight->transform= translate(12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
+    gk3d::ModelInstance *columnRight = new gk3d::ModelInstance;
+    columnRight->asset = &gCuboid;
+    columnRight->transform = translate(12.0f, 0.0f, 0.0f) * scale(0.4, 6.5, 0.4);
     gInstances.push_back(columnRight);
 
-    gk3d::ModelInstance *columnLeft=new gk3d::ModelInstance;
-    columnLeft->asset=&gCuboid;
-    columnLeft->transform= translate(-12.0f,0.0f,0.0f)*scale(0.4,6.5,0.4);
+    gk3d::ModelInstance *columnLeft = new gk3d::ModelInstance;
+    columnLeft->asset = &gCuboid;
+    columnLeft->transform = translate(-12.0f, 0.0f, 0.0f) * scale(0.4, 6.5, 0.4);
     gInstances.push_back(columnLeft);
 
-    gk3d::ModelInstance *cable1=new gk3d::ModelInstance;
-    cable1->asset=&gCuboid;
-    cable1->transform= translate(-10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gk3d::ModelInstance *cable1 = new gk3d::ModelInstance;
+    cable1->asset = &gCuboid;
+    cable1->transform = translate(-10.0f, 2.5f, 0.0f) * scale(2.0, 0.1, 0.1);
     gInstances.push_back(cable1);
-    gk3d::ModelInstance *cable2=new gk3d::ModelInstance;
-    cable2->asset=&gCuboid;
-    cable2->transform= translate(-10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gk3d::ModelInstance *cable2 = new gk3d::ModelInstance;
+    cable2->asset = &gCuboid;
+    cable2->transform = translate(-10.0f, 5.9f, 0.0f) * scale(2.0, 0.1, 0.1);
     gInstances.push_back(cable2);
-    gk3d::ModelInstance *cable3=new gk3d::ModelInstance;
-    cable3->asset=&gCuboid;
-    cable3->transform= translate(10.0f,2.5f,0.0f)*scale(2.0,0.1,0.1);
+    gk3d::ModelInstance *cable3 = new gk3d::ModelInstance;
+    cable3->asset = &gCuboid;
+    cable3->transform = translate(10.0f, 2.5f, 0.0f) * scale(2.0, 0.1, 0.1);
     gInstances.push_back(cable3);
-    gk3d::ModelInstance *cable4=new gk3d::ModelInstance;
-    cable4->asset=&gCuboid;
-    cable4->transform= translate(10.0f,5.9f,0.0f)*scale(2.0,0.1,0.1);
+    gk3d::ModelInstance *cable4 = new gk3d::ModelInstance;
+    cable4->asset = &gCuboid;
+    cable4->transform = translate(10.0f, 5.9f, 0.0f) * scale(2.0, 0.1, 0.1);
     gInstances.push_back(cable4);
 
-    gk3d::ModelInstance *net=new gk3d::ModelInstance;
-    net->asset=&gNet;
-    net->transform= translate(0.0f,4.2f,0.0f)*scale(10.0,2.0,0.1);
+    gk3d::ModelInstance *net = new gk3d::ModelInstance;
+    net->asset = &gNet;
+    net->transform = translate(0.0f, 4.2f, 0.0f) * scale(10.0, 2.0, 0.1);
     gInstances.push_back(net);
 
-    gk3d::ModelInstance *ball1=new gk3d::ModelInstance;
-    ball1->asset=&gBall;
-    ball1->transform=translate(-7.0f, -6.5f, 10.0f)*scale(0.2,0.2,0.2);
+    gk3d::ModelInstance *ball1 = new gk3d::ModelInstance;
+    ball1->asset = &gBall;
+    ball1->transform = translate(-7.0f, -6.5f, 10.0f) * scale(0.2, 0.2, 0.2);
     gInstances.push_back(ball1);
 
-    gk3d::ModelInstance *ball2=new gk3d::ModelInstance;
-    ball2->asset=&gBall;
-    ball2->transform=translate(-5.0f, -6.5f, -13.0f)*scale(0.2,0.2,0.2);
+    gk3d::ModelInstance *ball2 = new gk3d::ModelInstance;
+    ball2->asset = &gBall;
+    ball2->transform = translate(-5.0f, -6.5f, -13.0f) * scale(0.2, 0.2, 0.2);
     gInstances.push_back(ball2);
 
-    gk3d::ModelInstance *ball3=new gk3d::ModelInstance;
-    ball3->asset=&gBall;
-    ball3->transform=translate(5.0f, -6.5f, -10.0f)*scale(0.2,0.2,0.2);
+    gk3d::ModelInstance *ball3 = new gk3d::ModelInstance;
+    ball3->asset = &gBall;
+    ball3->transform = translate(5.0f, -6.5f, -10.0f) * scale(0.2, 0.2, 0.2);
     gInstances.push_back(ball3);
 
-    gk3d::ModelInstance *ball4=new gk3d::ModelInstance;
-    ball4->asset=&gBall;
-    ball4->transform=translate(-1.0f, -6.5f, 7.0f)*scale(0.2,0.2,0.2);
+    gk3d::ModelInstance *ball4 = new gk3d::ModelInstance;
+    ball4->asset = &gBall;
+    ball4->transform = translate(-1.0f, -6.5f, 7.0f) * scale(0.2, 0.2, 0.2);
     gInstances.push_back(ball4);
 
     const float sufit = 69.0f;
     const float Z_spot = 47.0f;
-    gk3d::ModelInstance *leftSpot =new gk3d::ModelInstance;
-    leftSpot->asset=&gSpot;
-    leftSpot->transform=translate(-60.0f, sufit, Z_spot)*rotate(0, 1, 0, 45.0f);
+    gk3d::ModelInstance *leftSpot = new gk3d::ModelInstance;
+    leftSpot->asset = &gSpot;
+    leftSpot->transform = translate(-60.0f, sufit, Z_spot) * rotate(0, 1, 0, 45.0f);
     gInstances.push_back(leftSpot);
 
-    gk3d::ModelInstance *leftSpot1 =new gk3d::ModelInstance;
-    leftSpot1->asset=&gSpot;
-    leftSpot1->transform=translate(68.0f, sufit, Z_spot)*rotate(0, 1, 0, 135.0f);
+    gk3d::ModelInstance *leftSpot1 = new gk3d::ModelInstance;
+    leftSpot1->asset = &gSpot;
+    leftSpot1->transform = translate(68.0f, sufit, Z_spot) * rotate(0, 1, 0, 135.0f);
     gInstances.push_back(leftSpot1);
 
 
-    gk3d::ModelInstance *rightSpot1 =new gk3d::ModelInstance;
-    rightSpot1->asset=&gSpot;
-    rightSpot1->transform=translate(68.0f, sufit, -Z_spot)* rotate(0, 1, 0, -135.0f);;
+    gk3d::ModelInstance *rightSpot1 = new gk3d::ModelInstance;
+    rightSpot1->asset = &gSpot;
+    rightSpot1->transform = translate(68.0f, sufit, -Z_spot) * rotate(0, 1, 0, -135.0f);;
     gInstances.push_back(rightSpot1);
 
-    gk3d::ModelInstance *rightSpot2 =new gk3d::ModelInstance;
-    rightSpot2->asset=&gSpot;
-    rightSpot2->transform=translate(-60.0f, sufit, -Z_spot)*rotate(0, 1, 0, -45.0f);
+    gk3d::ModelInstance *rightSpot2 = new gk3d::ModelInstance;
+    rightSpot2->asset = &gSpot;
+    rightSpot2->transform = translate(-60.0f, sufit, -Z_spot) * rotate(0, 1, 0, -45.0f);
     gInstances.push_back(rightSpot2);
 
-    gk3d::ModelInstance *bench1 =new gk3d::ModelInstance;
-    bench1->asset=&gBench;
-    bench1->transform=translate(-45.0f, -5.3f, -16.0f)*scale(6,5,10);
+    gk3d::ModelInstance *bench1 = new gk3d::ModelInstance;
+    bench1->asset = &gBench;
+    bench1->transform = translate(-45.0f, -5.3f, -16.0f) * scale(6, 5, 10);
     gInstances.push_back(bench1);
 
-    gk3d::ModelInstance *bench2 =new gk3d::ModelInstance;
-    bench2->asset=&gBench;
-    bench2->transform=translate(-45.0f, -5.3f, 16.0f)*scale(6,5,10);
+    gk3d::ModelInstance *bench2 = new gk3d::ModelInstance;
+    bench2->asset = &gBench;
+    bench2->transform = translate(-45.0f, -5.3f, 16.0f) * scale(6, 5, 10);
     gInstances.push_back(bench2);
 }
 
@@ -185,21 +186,21 @@ static void CreateInstances() {
 static void Render() {
 
     glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    std::list<gk3d::ModelInstance*>::iterator it;
-    for (it=gInstances.begin(); it!=gInstances.end(); ++it) {
-        (*it)->Render(gCamera,renderParams);
+    std::list<gk3d::ModelInstance *>::iterator it;
+    for (it = gInstances.begin(); it != gInstances.end(); ++it) {
+        (*it)->Render(gCamera, renderParams);
     }
 
     glfwSwapBuffers();
 }
 
-void update_delayed_input(float& secondsElapsed) {
+void update_delayed_input(float &secondsElapsed) {
     //turn off/on linear filtering
     if (glfwGetKey('L')) {
-        if (secondsElapsed>0.3){
-            switch (renderParams.magTextureFilter){
+        if (secondsElapsed > 0.3) {
+            switch (renderParams.magTextureFilter) {
                 case GL_LINEAR:
                     renderParams.magTextureFilter = GL_NEAREST;
                     break;
@@ -209,15 +210,15 @@ void update_delayed_input(float& secondsElapsed) {
                 default:
                     break;
             }
-            secondsElapsed=0.0;
+            secondsElapsed = 0.0;
         }
     }
 
     if (glfwGetKey('T')) {
-        if (secondsElapsed>0.3){
-            switch (renderParams.minTextureFilter){
+        if (secondsElapsed > 0.3) {
+            switch (renderParams.minTextureFilter) {
                 case GL_LINEAR_MIPMAP_LINEAR:
-                    renderParams.minTextureFilter= GL_NEAREST;
+                    renderParams.minTextureFilter = GL_NEAREST;
                     break;
                 case GL_NEAREST:
                     renderParams.minTextureFilter = GL_LINEAR_MIPMAP_LINEAR;
@@ -225,72 +226,72 @@ void update_delayed_input(float& secondsElapsed) {
                 default:
                     break;
             }
-            secondsElapsed=0.0;
+            secondsElapsed = 0.0;
         }
     }
 
-    GLfloat bias=0.0;
+    GLfloat bias = 0.0;
     if (glfwGetKey('P')) {
-        if (secondsElapsed>0.3){
-            bias=1.0f;
-            secondsElapsed=0.0;
+        if (secondsElapsed > 0.3) {
+            bias = 1.0f;
+            secondsElapsed = 0.0;
         }
     }
     if (glfwGetKey('O')) {
-        if (secondsElapsed>0.3){
-            bias=-1.0f;
-            secondsElapsed=0.0;
+        if (secondsElapsed > 0.3) {
+            bias = -1.0f;
+            secondsElapsed = 0.0;
         }
     }
-    renderParams.bias+=bias;
+    renderParams.bias += bias;
     float max_bias = 3.0f;
-    if (renderParams.bias>max_bias) {
-        renderParams.bias=max_bias;
+    if (renderParams.bias > max_bias) {
+        renderParams.bias = max_bias;
     }
-    if (renderParams.bias<0.0) {
-        renderParams.bias=0;
+    if (renderParams.bias < 0.0) {
+        renderParams.bias = 0;
     }
 
     if (glfwGetKey('M')) {
-        if (secondsElapsed>0.3) {
+        if (secondsElapsed > 0.3) {
             if (!gCourt.swap()) {
                 gCourt.save_texture_to_swap(1);
-            }else {
+            } else {
                 gCourt.flush_swap();
             }
-            secondsElapsed=0.0;
+            secondsElapsed = 0.0;
         }
     }
     if (glfwGetKey('F')) {
-        if (secondsElapsed>0.3) {
-            gFog->eq=(gFog->eq+1)%4;
-            secondsElapsed=0.0;
+        if (secondsElapsed > 0.3) {
+            gFog->eq = (gFog->eq + 1) % 4;
+            secondsElapsed = 0.0;
         }
     }
     //fog density
     if (glfwGetKey('H')) {
-        if (secondsElapsed>0.3) {
-            gFog->density=(gFog->density+0.01);
-            if (gFog->density>0.1) {
-                gFog->density=0.1;
+        if (secondsElapsed > 0.3) {
+            gFog->density = (gFog->density + 0.01);
+            if (gFog->density > 0.1) {
+                gFog->density = 0.1;
             }
-            secondsElapsed=0.0;
+            secondsElapsed = 0.0;
         }
     }
     if (glfwGetKey('G')) {
-        if (secondsElapsed>0.3) {
-            gFog->density=(gFog->density-0.01);
-            if (gFog->density<0.0) {
-                gFog->density=0.0;
+        if (secondsElapsed > 0.3) {
+            gFog->density = (gFog->density - 0.01);
+            if (gFog->density < 0.0) {
+                gFog->density = 0.0;
             }
-            secondsElapsed=0.0;
+            secondsElapsed = 0.0;
         }
     }
 }
 
 void Update(float secondsElapsed) {
 
-    secondsElapsedAfterLastPress +=secondsElapsed;
+    secondsElapsedAfterLastPress += secondsElapsed;
     update_delayed_input(secondsElapsedAfterLastPress);
 
     //move position of camera based on WASD keys, and XZ keys for up and down
@@ -341,9 +342,9 @@ void Update(float secondsElapsed) {
     glfwSetMouseWheel(0);
 }
 
-void GLFWCALL reshape( int width, int height ) {
+void GLFWCALL reshape(int width, int height) {
     glViewport(0, 0, width, height);
-    gCamera.setViewportAspectRatio((float)width/height);
+    gCamera.setViewportAspectRatio((float) width / height);
 }
 
 // the program starts here
@@ -359,7 +360,7 @@ int main(int argc, char *argv[]) {
     if (!glfwOpenWindow(SCREEN_SIZE.x, SCREEN_SIZE.y, 8, 8, 8, 8, 0, 0, GLFW_WINDOW))
         throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
 
-    glfwSetWindowSizeCallback( reshape );
+    glfwSetWindowSizeCallback(reshape);
 
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
@@ -386,17 +387,17 @@ int main(int argc, char *argv[]) {
     LoadAssets();
     CreateInstances();
 
-    gFog =new gk3d::Fog;
-    gFog->density=0.01;
-    gFog->color=glm::vec4(1,1,1,1);
-    gFog->start=10;
-    gFog->end=80;
-    gFog->eq=3;
+    gFog = new gk3d::Fog;
+    gFog->density = 0.01;
+    gFog->color = glm::vec4(1, 1, 1, 1);
+    gFog->start = 10;
+    gFog->end = 80;
+    gFog->eq = 3;
     renderParams.magTextureFilter = GL_NEAREST;
     renderParams.minTextureFilter = GL_NEAREST;
-    renderParams.bias=0.0f;
-    renderParams.fog= gFog;
-    gCamera.setPosition(glm::vec3(0,13,25));
+    renderParams.bias = 0.0f;
+    renderParams.fog = gFog;
+    gCamera.setPosition(glm::vec3(0, 13, 25));
     gCamera.setNearAndFarPlanes(0.1f, 200.0f);
     gCamera.setFieldOfView(90.0f);
     gCamera.offsetOrientation(30.0f, 0.0f);
@@ -414,7 +415,7 @@ int main(int argc, char *argv[]) {
         Render();
 
         //exit program if escape key is pressed
-        if(glfwGetKey(GLFW_KEY_ESC))
+        if (glfwGetKey(GLFW_KEY_ESC))
             glfwCloseWindow();
     }
 

@@ -28,6 +28,8 @@ namespace gk3d {
      */
     class Texture {
     public:
+
+        Texture();
         /**
          Creates a texture from a bitmap.
          
